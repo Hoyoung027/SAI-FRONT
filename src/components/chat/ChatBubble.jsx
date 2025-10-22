@@ -55,7 +55,7 @@ export default function ChatBubble({ msg, onToggleBookmark }) {
         <div className="mt-0.5 text-xs text-neutral-500">{msg.time}</div>
       </div>
 
-      {!isLeft && <div className="ml-2 h-11 w-11 shrink-0" />}
+      {!isLeft && <div className="ml-2 h-11 w- shrink-0" />}
     </div>
   );
 }

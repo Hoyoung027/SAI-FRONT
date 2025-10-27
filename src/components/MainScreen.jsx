@@ -9,37 +9,60 @@ export default function MainScreen() {
       <Navbar />
 
       {/* 🔶 메인 카드 */}
-      <div className="w-[21rem] h-[21rem] mt-[1.5rem] rounded-[1.25rem] overflow-hidden shadow-sm relative bg-gradient-to-r from-[#FF885B] to-[#FA502E]">
+      <div className="w-[21rem] h-[21rem] mt-[1.5rem] rounded-[1.25rem] overflow-hidden shadow-sm relative bg-gradient-to-b from-[#FFDAC0] to-[#FA502E]">
         <img
-            src="/icons/main-character.svg"
-            alt="Main Character"
-            className="ml-[1.75rem] mt-[3.25rem] w-[17rem] h-[10rem]"
-          />
+          src="/icons/main-character.svg"
+          alt="Main Character"
+          className="ml-[1.75rem] mt-[2.8rem] w-[17rem] h-[10rem]"
+        />
 
-        <div className=" p-6 text-white rounded-[1.25rem] relative overflow-hidden">
+        <div className="p-6 text-white rounded-[1.25rem] relative overflow-hidden">
           {/* 텍스트 부분 */}
-          <div className="z-10 relative text-[#FFFFFF]">
-            <h2 className="text-[1.5rem] text-lg font-semibold mb-1 leading-snug">
+          <div className="z-10 relative text-[#FFFFFF] ml-[1.75rem] mt-[-0.5rem]">
+            <h2 className="text-[1.5rem] font-700 leading-[1] mb-[0.5rem]">
               사이, 이렇게 시작해보세요
             </h2>
-            <p className="text-[0.875rem] opacity-90 leading-snug">
-              질문으로 시작하는 대화, 처음이라도 어렵지 않아요.
+            <p className="text-[0.875rem] font-700 leading-[1.5]">
+              질문으로 시작하는 대화,<br />
+              처음이라도 어렵지 않아요.
             </p>
           </div>
-          </div>
-
-          {/* 페이지 표시 (1/3+) */}
-          <div className="absolute bottom-4 right-4 bg-white/30 px-3 py-[3px] rounded-full text-[0.75rem] font-medium">
-            1 / 3 +
         </div>
+
+        {/* 페이지 표시 (정지버튼 + 1/3+) */}
+        <div className="absolute mt-[-1rem] right-4 flex items-center gap-2">
+            {/* 정지버튼 */}
+            <img
+            src="/icons/pause.svg"
+            alt="정지"
+            className="w-[1.375rem] h-[1.375rem] ml-[15.5rem] "
+            />
+
+            {/* 페이지 텍스트 */}
+            <div className="flex items-center justify-center ml-[0.25rem] bg-[rgba(59,61,64,0.70)] text-[#FFFFFF] text-[0.75rem] w-[3.375rem] h-[1.375rem] rounded-full leading-none">
+                <span className="font-[700] ml-[0.5rem] mt-[-0.12rem]">1</span>
+                <span className="font-[400] ml-[0.12rem] mt-[-0.12rem]">/ </span>
+                <span className="font-[400] ml-[0.12rem] mt-[-0.12rem]">3</span>
+                <img
+                src="/icons/plus.svg"
+                alt="plus"
+                className="w-[0.55rem] h-[0.55rem] ml-[0.25rem] mr-[0.25rem] mt-[0.12rem]"
+                />
+            </div>
+        </div>
+
       </div>
 
       {/* 🔸 섹션 1 */}
       <div className="w-full px-5 mt-8 flex justify-between items-center">
-        <h3 className="text-[1rem] font-semibold">
+        <h3 className="text-[1rem] ml-[1.5rem] font-semibold">
           연휴 사이 대화하기 좋은 질문들
         </h3>
-        <span className="text-[#999] text-sm">{'>'}</span>
+            <img
+            src="/icons/next.svg"
+            alt="plus"
+            className="w-[0.875rem] h-[1.75rem] mr-[1.5rem] mt-[0.12rem]"
+            />
       </div>
 
       <div className="w-[21rem] bg-white rounded-xl shadow-sm p-4 mt-3 border border-gray-100">

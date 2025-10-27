@@ -28,11 +28,11 @@ export default function MainScreen() {
 
         <div className=" p-6 text-white rounded-[1.25rem] relative overflow-hidden">
           {/* 텍스트 부분 */}
-          <div className="z-10 relative">
-            <h2 className="text-lg font-semibold mb-1 leading-snug">
+          <div className="z-10 relative text-[#FFFFFF]">
+            <h2 className="text-[1.5rem] text-lg font-semibold mb-1 leading-snug">
               사이, 이렇게 시작해보세요
             </h2>
-            <p className="text-sm opacity-90 leading-snug">
+            <p className="text-[0.875rem] opacity-90 leading-snug">
               질문으로 시작하는 대화, 처음이라도 어렵지 않아요.
             </p>
           </div>

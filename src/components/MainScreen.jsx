@@ -8,18 +8,8 @@ export default function MainScreen() {
       {/* 상단 네비게이션 */}
       <Navbar />
 
-      {/* 탭 메뉴 */}
-      <div className="flex w-full justify-around text-[0.95rem] font-medium border-b border-gray-100 bg-white">
-        <button className="text-[#FA502E] border-b-2 border-[#FA502E] py-3">
-          NOW
-        </button>
-        <button className="text-gray-500 py-3">추천 질문</button>
-        <button className="text-gray-500 py-3">최신 질문</button>
-        <button className="text-gray-500 py-3">인기 질문</button>
-      </div>
-
       {/* 🔶 메인 카드 */}
-      <div className="w-[21rem] h-[21rem] mt-6 rounded-[1.25rem] overflow-hidden shadow-sm relative bg-gradient-to-r from-[#FF885B] to-[#FA502E]">
+      <div className="w-[21rem] h-[21rem] mt-[1.5rem] rounded-[1.25rem] overflow-hidden shadow-sm relative bg-gradient-to-r from-[#FF885B] to-[#FA502E]">
         <img
             src="/icons/main-character.svg"
             alt="Main Character"

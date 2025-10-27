@@ -1,30 +1,89 @@
 import React from "react";
-import { Home, Search, MessageCircle, User } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function BottomNav() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const currentPath = location.pathname;
+  const isActive = (path) => currentPath === path;
+
   return (
-    <div className="absolute bottom-0 left-0 w-full border-t border-gray-200 bg-white flex justify-around py-2 z-50">
-      <button className="flex flex-col items-center text-[#FA502E]">
-        <Home className="w-5 h-5" />
-        <span className="text-xs mt-1 font-medium">홈</span>
+    <div className="bg-[#FFFFFF] absolute mt-[42rem] left-0 w-full h-[4.5rem] gap-[1rem] shadow-[0_-4px_10px_rgba(0,0,0,0.08)] flex justify-around items-center z-50">
+      {/* 홈 */}
+      <button
+        onClick={() => navigate("/main")}
+        className={`flex flex-col items-center ml-[1rem] bg-transparent border-none focus:outline-none ${
+          isActive("/main") ? "text-[#000000]" : "text-[#B5BBC1]"
+        }`}
+      >
+        <img
+          src={
+            isActive("/main")
+              ? "/icons/home-active.svg"
+              : "/icons/home-inactive.svg"
+          }
+          alt="홈"
+          className="w-5 h-5"
+        />
+        <span className="text-[0.625rem] mt-1 font-medium">홈</span>
       </button>
 
-      <button className="flex flex-col items-center text-gray-500">
-        <Search className="w-5 h-5" />
-        <span className="text-xs mt-1">검색</span>
+      {/* 검색 */}
+      <button
+        onClick={() => navigate("/search")}
+        className={`flex flex-col items-center bg-transparent border-none focus:outline-none ${
+          isActive("/search") ? "text-[#000000]" : "text-[#B5BBC1]"
+        }`}
+      >
+        <img
+          src={
+            isActive("/search")
+              ? "/icons/search-active.svg"
+              : "/icons/search-inactive.svg"
+          }
+          alt="검색"
+          className="w-5 h-5"
+        />
+        <span className="text-[0.625rem] mt-1">검색</span>
       </button>
 
-      <button className="flex flex-col items-center text-gray-500 relative">
-        <MessageCircle className="w-5 h-5" />
-        <span className="absolute -top-1 right-3 bg-[#FA502E] text-white text-[0.6rem] rounded-full px-[0.3rem]">
-          27
-        </span>
-        <span className="text-xs mt-1">채팅</span>
+      {/* 채팅 */}
+      <button
+        onClick={() => navigate("/chat")}
+        className={`flex flex-col items-center relative bg-transparent border-none focus:outline-none ${
+          isActive("/chat") ? "text-[#000000]" : "text-[#B5BBC1]"
+        }`}
+      >
+        <img
+          src={
+            isActive("/chat")
+              ? "/icons/chat-active.svg"
+              : "/icons/chat-inactive.svg"
+          }
+          alt="채팅"
+          className="w-3 h-5"
+        />
+        <span className="text-[0.625rem] mt-1">채팅</span>
       </button>
 
-      <button className="flex flex-col items-center text-gray-500">
-        <User className="w-5 h-5" />
-        <span className="text-xs mt-1">마이페이지</span>
+      {/* 마이페이지 */}
+      <button
+        onClick={() => navigate("/mypage")}
+        className={`flex flex-col items-center bg-transparent border-none focus:outline-none ${
+          isActive("/mypage") ? "text-[#000000]" : "text-[#B5BBC1]"
+        }`}
+      >
+        <img
+          src={
+            isActive("/mypage")
+              ? "/icons/mypage-active.svg"
+              : "/icons/mypage-inactive.svg"
+          }
+          alt="마이페이지"
+          className="w-5 h-5"
+        />
+        <span className="text-[0.625rem] mt-1">마이페이지</span>
       </button>
     </div>
   );

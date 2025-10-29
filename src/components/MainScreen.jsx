@@ -13,12 +13,12 @@ export default function MainScreen() {
         <img
           src="/icons/main-character.svg"
           alt="Main Character"
-          className="ml-[1.75rem] mt-[2.8rem] w-[17rem] h-[10rem]"
+          className="ml-[1.75rem] mt-[3.25rem] w-[17.5rem] h-[10rem]"
         />
 
         <div className="p-6 text-white rounded-[1.25rem] relative overflow-hidden">
           {/* 텍스트 부분 */}
-          <div className="z-10 relative text-[#FFFFFF] ml-[1.75rem] mt-[-0.5rem]">
+          <div className="z-10 relative font-Pretendard text-[#FFFFFF] ml-[1.75rem] mt-[-0.5rem]">
             <h2 className="text-[1.5rem] font-700 leading-[1] mb-[0.5rem]">
               사이, 이렇게 시작해보세요
             </h2>
@@ -35,7 +35,7 @@ export default function MainScreen() {
             <img
             src="/icons/pause.svg"
             alt="정지"
-            className="w-[1.375rem] h-[1.375rem] ml-[15.5rem] "
+            className="w-[1.375rem] h-[1.375rem] ml-[15rem] "
             />
 
             {/* 페이지 텍스트 */}

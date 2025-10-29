@@ -2,13 +2,13 @@ import React, { useLayoutEffect, useRef, useState } from "react";
 
 function Chevron({ expanded }) {
   return (
-    <svg
+  <svg
       xmlns="http://www.w3.org/2000/svg"
       width="14"
       height="8"
       viewBox="0 0 14 8"
       fill="none"
-      className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+      className={`transition-transform ${expanded ? "rotate-180" : ""}`}
     >
       <path
         fillRule="evenodd"
@@ -27,64 +27,35 @@ function Chevron({ expanded }) {
   );
 }
 
-export default function QuestionStrip({ title, defaultExpanded = false }) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-  const [showToggle, setShowToggle] = useState(false);
-  const textRef = useRef(null);
-  const titleId = "questionstrip-title";
 
-  // 긴 제목일 때만 토글 버튼 보이기
-  useLayoutEffect(() => {
-    const el = textRef.current;
-    if (!el) return;
-
-    const check = () => {
-      if (expanded) {
-        setShowToggle(true);
-      } else {
-        setShowToggle(el.scrollWidth > el.clientWidth);
-      }
-    };
-
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, [expanded, title]);
-
+export default function QuestionStrip({ title = "" }) {
+  const [expanded, setExpanded] = useState(false);
+  const label = expanded ? "접기" : "더 보기";
   return (
     <div className="bg-[#f6f1ee] border-b border-neutral-200">
-      <div className="mx-auto max-w-[760px] px-3 py-2 flex items-center gap-2">
-        <span className="inline-flex items-center rounded-md bg-[#e76e55] text-white text-xs px-2 py-1">
-          질문
-        </span>
-
-        {/* 제목 영역 */}
-        <div className="flex-1 min-w-0">
-          <div
-            id={titleId}
-            ref={textRef}
-            className={
-              expanded
-                ? "text-[15px] text-neutral-800 whitespace-normal break-words"
-                : "text-[15px] text-neutral-800 truncate"
-            }
-          >
-            {title}
-          </div>
+      
+  <div className="w-full px-3 py-2 flex items-center gap-2 lg:max-w-[760px] lg:mx-auto">
+        
+        <span className="inline-flex items-center rounded-md bg-[#e76e55] text-white text-xs px-2 py-1">질문</span>
+        
+        <div
+          id="q-title"
+          className={`flex-1 text-[15px] text-neutral-800 ${expanded ? "whitespace-normal break-words" : "truncate"}`}
+        >
+          {expanded || title.length < 30 ? title : title.substring(0, 30) + "... "}
         </div>
-
-        {/* 토글 버튼 */}
-        {showToggle && (
-          <button
-            aria-label={expanded ? "제목 접기" : "제목 펼치기"}
-            aria-expanded={expanded}
-            aria-controls={titleId}
-            onClick={() => setExpanded(!expanded)}
-            className="p-2 text-neutral-600 shrink-0"
-          >
-            <Chevron expanded={expanded} />
-          </button>
-        )}
+        
+        
+        <button
+          aria-label={label}
+          aria-expanded={expanded}
+          aria-controls="q-title"
+          onClick={() => setExpanded((v) => !v)}
+          className="p-2 text-neutral-600"
+          title={label}
+        >
+          {<Chevron expanded={expanded} />}
+        </button>
       </div>
     </div>
   );

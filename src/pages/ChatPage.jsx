@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import TopBar from "../components/chat/TopBar";
 import ChatBubble from "../components/chat/ChatBubble";
 import ChatInput from "../components/chat/ChatInput";
+import QuestionStrip from "../components/chat/QuestionStrip";
 
 // Helpers
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -71,77 +72,58 @@ const apiResponse = {
 }
 
 
-// Question summary strip (expand/collapse long title)
-function QuestionStrip({ title = "" }) {
-  const [expanded, setExpanded] = useState(false);
-  const label = expanded ? "접기" : "더 보기";
-  return (
-    <div className="bg-[#f6f1ee] border-b border-neutral-200">
-      
-      <div className="mx-auto max-w-[760px] px-3 py-2 flex items-center gap-2">
-        
-        <span className="inline-flex items-center rounded-md bg-[#e76e55] text-white text-xs px-2 py-1">질문</span>
-        
-        <div
-          id="q-title"
-          className={`flex-1 text-[15px] text-neutral-800 ${expanded ? "whitespace-normal break-words" : "truncate"}`}
-        >
-          {expanded ? title : title.substring(0, 30) + "... "}
-        </div>
-        
-        
-        <button
-          aria-label={label}
-          aria-expanded={expanded}
-          aria-controls="q-title"
-          onClick={() => setExpanded((v) => !v)}
-          className="p-2 text-neutral-600"
-          title={label}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="8"
-            viewBox="0 0 14 8"
-            fill="none"
-            className={`transition-transform ${expanded ? "rotate-180" : ""}`}
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M7.71102 7.157L13.368 1.5L11.954 0.0859985L7.00401 5.036L2.05401 0.0859985L0.640015 1.5L6.29701 7.157C6.48454 7.34447 6.73885 7.44978 7.00401 7.44978C7.26918 7.44978 7.52349 7.34447 7.71102 7.157Z"
-              fill="#B5BBC1"
-            />
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M7.71102 7.157L13.368 1.5L11.954 0.0859985L7.00401 5.036L2.05401 0.0859985L0.640015 1.5L6.29701 7.157C6.48454 7.34447 6.73885 7.44978 7.00401 7.44978C7.26918 7.44978 7.52349 7.34447 7.71102 7.157Z"
-              fill="black"
-              fillOpacity="0.2"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-
 function ChatWindow() {
   const [messages, setMessages] = useState(apiResponse.seed);
   const [side, setSide] = useState("right");
   const scrollRef = useRef(null);
-  const bottomRef = useRef(null);
   const didMountRef = useRef(false);
+  // 상태 추적용 ref: 오버플로우 발생 여부, 사용자가 하단 근처인지 여부
+  const hasOverflowedRef = useRef(false);
+  const stickToBottomRef = useRef(false);
 
-  // 최신 메시지가 첫 화면에 보이도록, 그리기 전에 바로 하단으로 스크롤
+  // 하단 근처 판정 유틸
+  const isNearBottom = (el) => {
+    const threshold = 24; // px 여유
+    return el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+  };
+
+  // 최초 마운트 시 현재 상태 측정
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    hasOverflowedRef.current = el.scrollHeight > el.clientHeight + 1;
+    stickToBottomRef.current = isNearBottom(el);
+  }, []);
+
+  // 스크롤 핸들러: 사용자 위치 추적
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    stickToBottomRef.current = isNearBottom(el);
+    hasOverflowedRef.current = el.scrollHeight > el.clientHeight + 1;
+  };
+
+  // 메시지 추가 시 동작 규칙
+  // - 아직 오버플로우가 아니면(화면을 다 채우지 않으면) 스크롤하지 않음: 상단부터 차곡차곡
+  // - 처음으로 오버플로우가 발생하는 순간엔 하단으로 한 번 이동하여 최신이 아래에 보이게
+  // - 이후에는 사용자가 하단 근처일 때만 하단 고정(스무스), 위로 올려 본 상태면 스크롤 유지
   useLayoutEffect(() => {
     const el = scrollRef.current;
-    if (!bottomRef.current || !el) return;
-    // 스크롤 마진/패딩을 고려해서 센티넬로 이동
-    bottomRef.current.scrollIntoView({ block: 'end', behavior: didMountRef.current ? 'smooth' : 'auto' });
-    // 일부 브라우저에서 컨테이너 스크롤을 보정
-    el.scrollTop = el.scrollHeight;
+    if (!el) return;
+
+    // 치명적인 경계값 문제 방지: 거의 동일한 높이 차이는 오버플로우로 보지 않음
+    const delta = el.scrollHeight - el.clientHeight;
+    const overflowNow = delta > 8; // 8px 이하 차이는 비오버플로우로 간주
+    const becameOverflow = overflowNow && !hasOverflowedRef.current;
+
+    if (becameOverflow || (overflowNow && stickToBottomRef.current)) {
+      el.scrollTo({ top: el.scrollHeight, behavior: didMountRef.current ? 'smooth' : 'auto' });
+    } else if (!overflowNow) {
+      // 아직 화면을 다 채우지 못했다면 항상 최상단에 고정
+      el.scrollTop = 0;
+    }
+
+    hasOverflowedRef.current = overflowNow;
     didMountRef.current = true;
   }, [messages.length]);
 
@@ -166,16 +148,16 @@ function ChatWindow() {
       </header>
 
       {/* 2) 가운데 행(parent)에 min-h-0 필수 */}
-      <main className="mx-auto max-w-[760px] w-full px-3 min-h-0">
+  <main className="w-full px-3 min-h-0 lg:max-w-[760px] lg:mx-auto">
         <div
           ref={scrollRef}
-          className="h-full overflow-y-auto pt-4 pb-0 overscroll-contain"
+          onScroll={handleScroll}
+          className="h-full overflow-y-auto pt-4 pb-0 overscroll-contain flex flex-col items-stretch"
         >
-          <div className="mx-auto flex max-w-[680px] flex-col gap-5">
+          <div className="flex w-full max-w-[680px] flex-col justify-start items-stretch gap-5 lg:mx-auto">
             {messages.map((m) => (
               <ChatBubble key={m.id} msg={m} onToggleBookmark={toggleBookmark} />
             ))}
-            <div ref={bottomRef} className="h-0" />
           </div>
         </div>
       </main>

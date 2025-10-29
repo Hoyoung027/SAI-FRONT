@@ -1,12 +1,19 @@
 @import "tailwindcss";
 @import "pretendard/dist/web/static/pretendard.css";
 
+<<<<<<< HEAD
 /* 전역 기본 폰트를 Pretendard로 강제 적용 */
+=======
+>>>>>>> dev
 html {
   font-family: "Pretendard", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> dev
 
 :root {
   line-height: 1.5;
@@ -37,6 +44,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  /* Ensure Pretendard applies even if preflight sets a body font */
+  font-family: "Pretendard", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Helvetica Neue", Arial, sans-serif;
 }
 
 h1 {

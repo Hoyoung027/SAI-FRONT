@@ -8,6 +8,7 @@ export default function App() {
   return (
     <div className="flex justify-center items-center min-h-screen bg-white">
       <div className="w-[23.44rem] h-[45.88rem] bg-white shadow-md overflow-hidden border border-gray-200">
+        {/* Font preview block: remove when not needed */}
         <Router>
           <Routes>
             {/* 기본 경로로 들어오면 /login으로 자동 이동 */}

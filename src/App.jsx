@@ -7,18 +7,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import QuestionPostScreen from "./pages/QuestionPostScreen";
 
 export default function App() {
-  // 🔹 브라우저 창 높이 가져오기
-  const height = window.innerHeight;
-
   return (
-    <div
-      className="flex justify-center items-center bg-white"
-      // 🔹 style로 직접 높이 지정
-      style={{ height: `${height}px` }}
-    >
-      <div>
-      {/* <div className="w-[23.44rem] h-[45.88rem] bg-white shadow-md overflow-hidden border border-gray-200"> */}
-        {/* Font preview block: remove when not needed */}
+      <div className="flex justify-center items-center bg-white">
+        <div className="min-w-[350px] max-w-[500px] w-full h-[100vh] bg-white shadow-md overflow-hidden border border-gray-200">
         <Router>
           <Routes>
             {/* 기본 경로로 들어오면 /login으로 자동 이동 */}

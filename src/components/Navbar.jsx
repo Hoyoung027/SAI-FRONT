@@ -39,27 +39,6 @@ export default function Navbar() {
           />
         </div>
       </div>
-
-      {/* 하단 탭 메뉴 */}
-      <div className="flex justify-around w-full bg-white mt-[1rem]">
-        {tabs.map((tab) => {
-          const active = location.pathname === tab.path;
-          return (
-            <button
-              key={tab.name}
-              onClick={() => navigate(tab.path)}
-              className={`relative flex flex-col items-center justify-center h-[2.5rem] bg-transparent border-none outline-none pb-2 text-[0.9rem] transition-colors duration-200 ${
-                active ? "text-black font-semibold" : "text-black"
-              }`}
-            >
-              {tab.name}
-              {active && (
-                <span className="absolute mt-[2rem] ml-[0.1rem] left-0 w-full h-[2px] bg-[#FA502E] rounded-full"></span>
-              )}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }

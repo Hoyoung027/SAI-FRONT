@@ -7,13 +7,14 @@ export default function SearchScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white w-full min-h-screen font-[Pretendard]">
-      <div className="flex flex-col items-center w-full max-w-[500px] mx-auto overflow-y-auto pb-[6rem]">
-        {/* 상단 네비게이션 */}
-        <Navbar />
+    <div className="flex flex-col min-h-screen w-full bg-white font-[Pretendard]">
+      {/* 상단 네비게이션 */}
+      <Navbar />
 
+      {/* 내용 부분 */}
+      <div className="flex-1 overflow-y-auto w-full max-w-[500px] mx-auto px-5 pb-24">
         {/* 검색창 */}
-        <div className="w-full px-5 mt-4">
+        <div className="mt-4">
           <input
             type="text"
             placeholder="검색어를 입력하세요"
@@ -22,7 +23,7 @@ export default function SearchScreen() {
         </div>
 
         {/* 최근 검색어 */}
-        <div className="w-full px-5 mt-6">
+        <div className="mt-6">
           <h2 className="text-[0.9rem] font-medium mb-2">최근 검색어</h2>
           <div className="flex flex-col space-y-2 text-[0.9rem] text-gray-700">
             {["장강명", "우리가 빛의 속도로 갈 수 없다면", "이상한 집", "J가 죽었다"].map(
@@ -37,7 +38,7 @@ export default function SearchScreen() {
         </div>
 
         {/* 인기 검색어 */}
-        <div className="w-full px-5 mt-8 mb-24">
+        <div className="mt-8 mb-10">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-[0.9rem] font-medium">인기 검색어</h2>
             <p className="text-[0.75rem] text-gray-400">2025.10.10 12:00 기준</p>
@@ -67,7 +68,9 @@ export default function SearchScreen() {
           </div>
         </div>
       </div>
-        <BottomNav />
+
+      {/* 하단 네비게이션 (항상 고정) */}
+      <BottomNav />
     </div>
   );
 }

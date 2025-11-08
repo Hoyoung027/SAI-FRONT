@@ -20,7 +20,7 @@ export default function App() {
             <Route path="/main" element={<MainScreen />} />
             <Route path="/search" element={<SearchScreen />} />
             <Route path="/category-search" element={<CategorySearchScreen/>}/>
-            <Route path="/search/result" element={<SearchResult />} />
+            <Route path="/search-result" element={<SearchResult />} />
           </Routes>
         </Router>
       </div>

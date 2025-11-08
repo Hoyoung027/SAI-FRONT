@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import BottomNav from "../components/BottomNav";
+import { useNavigate } from "react-router-dom";
 
 export default function CategorySearchScreen() {
   const [selected, setSelected] = useState([]);
   const [showPopular, setShowPopular] = useState(false);
+  const navigate = useNavigate();
 
   const categories = {
     도서: [
@@ -59,10 +61,10 @@ export default function CategorySearchScreen() {
   // ✅ SVG 아이콘 적용
   const renderTrendIcon = (trend) => {
     if (trend === "up")
-      return <img src="/icons/trend-up.svg" alt="상승" className="w-[0.5rem] h-[0.5rem] ml-[0.43rem]" />;
+      return <img src="/icons/trend-up.svg" alt="상승" className="w-[0.5rem] h-[0.5rem] ml-[-0.75rem]" />;
     if (trend === "down")
-      return <img src="/icons/trend-down.svg" alt="하락" className="w-[0.5rem] h-[0.5rem] ml-[0.43rem]" />;
-    return <img src="/icons/trend-same.svg" alt="변동없음" className="w-[0.5rem] h-[0.5rem] ml-[0.43rem]" />;
+      return <img src="/icons/trend-down.svg" alt="하락" className="w-[0.5rem] h-[0.5rem] ml-[-0.75rem]" />;
+    return <img src="/icons/trend-same.svg" alt="변동없음" className="w-[0.5rem] h-[0.5rem] ml-[-0.75rem]" />;
   };
 
   return (
@@ -82,12 +84,13 @@ export default function CategorySearchScreen() {
               type="text"
               placeholder="검색어를 입력하세요"
               className="bg-transparent flex-1 ml-[0.25rem] text-[0.875rem] placeholder-[#9CA3AF] text-[#333] outline-none border-none"
-            />
+              onFocus={() => navigate("/search")} 
+           />
           </div>
         </div>
 
         {/* 🔥 인기검색어 */}
-        <div className="w-full max-w-[500px] mx-auto pl-[1.5rem] pr-6 mt-4 bg-white relative z-20">
+        <div className="w-full max-w-[500px] mx-auto pl-[1.5rem] pr-6 mt-[0.5rem] bg-white relative z-20">
           {!showPopular ? (
             <div className="flex justify-between items-center mb-2">
               <p className="text-[1rem] font-medium flex items-center">
@@ -101,16 +104,16 @@ export default function CategorySearchScreen() {
                 <img
                   src="/icons/arrow-down.svg"
                   alt="열기"
-                  className="w-[0.9rem] h-[0.5rem]"
+                  className="w-[1.75rem] h-[0.875rem] mr-[2rem]"
                 />
               </button>
             </div>
           ) : (
-            <div className="mb-3">
-              <div className="flex justify-between items-center mb-[0.75rem]">
+            <div className="mb-[1rem]">
+              <div className="flex justify-between items-center mb-[0rem]">
                 <p className="text-[1rem] font-bold text-[#000000]">
                   인기 검색어{" "}
-                  <span className="text-[#B5BBC1] text-[0.75rem] font-normal ml-1">
+                  <span className="text-[#B5BBC1] text-[0.75rem] font-normal ml-[0.25rem]">
                     2025.10.10 12:00 기준
                   </span>
                 </p>
@@ -121,26 +124,47 @@ export default function CategorySearchScreen() {
                   <img
                     src="/icons/arrow-up.svg"
                     alt="닫기"
-                    className="w-[0.9rem] h-[0.5rem]"
+                    className="w-[1.75rem] h-[0.875rem] mr-[2rem]"
                   />
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-[3.5rem] gap-y-[0.5rem]">
-                {popular.map((item, i) => (
+              {/* ✅ 인기 검색어 두 열로 분리 */}
+              <div className="flex gap-[3.5rem] mt-[0rem]">
+                {/* 왼쪽 열 (1,3,5,7,9) */}
+                <div className="flex flex-col gap-[0.75rem]">
+                  {popular.filter((_, i) => i % 2 === 0).map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center text-[1rem] text-[#000000] leading-[1.5rem]"
+                      onClick={() => toggleSelect(item.title)}
+                    >
+                      <span>
+                        {(i * 2) + 1}
+                        <span className="ml-[0.5rem]">{item.title}</span>
+                      </span>
+                      <span className="ml-[1.44rem]">{renderTrendIcon(item.trend)}</span>
+                    </div>
+                  ))}
+                </div>
+
+              {/* 오른쪽 열 (2,4,6,8,10) */}
+              <div className="flex flex-col gap-[0.75rem]">
+                {popular.filter((_, i) => i % 2 === 1).map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between cursor-pointer text-[1rem] text-[#000000] leading-[1.5rem]"
+                    className="flex items-center text-[1rem] text-[#000000] leading-[1.5rem]"
                     onClick={() => toggleSelect(item.title)}
                   >
                     <span>
-                      {i + 1}. {item.title}
-                    </span>
-                    {renderTrendIcon(item.trend)}
+                      {(i * 2) + 2} 
+                      <span className="ml-[0.5rem]">{item.title}</span>                    </span>
+                    <span className="ml-[1.44rem]">{renderTrendIcon(item.trend)}</span>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
           )}
         </div>
 
@@ -187,7 +211,7 @@ export default function CategorySearchScreen() {
                           ${
                             isSelected
                               ? "bg-[#FFF2EE] border-[#FA502E] text-[#FA502E]"
-                              : "bg-[#F5F5F5] border-transparent text-gray-700"
+                              : "bg-[#F2F4F8] border-transparent text-gray-700"
                           }`}
                       >
                         <span className="truncate">{item}</span>
@@ -211,7 +235,9 @@ export default function CategorySearchScreen() {
         <div className="fixed bottom-[0rem] left-1/2 -translate-x-1/2 w-full max-w-[500px] h-[9.31rem] bg-[#FFFFFF] shadow-[0_-2px_8px_rgba(0,0,0,0.08)] z-50 flex justify-center items-center">
           <div className="px-6 py-3 w-full">
             <div className="flex justify-between items-center ml-[1.5rem] text-[0.875rem] text-gray-500 mb-2">
-              <span>{selected.length} / 20</span>
+              <span>
+                <span className="text-[#FA502E]">{selected.length}</span> / 20
+              </span>
               <button
                 onClick={resetSelection}
                 className="flex items-center gap-1 mr-[1.5rem] text-[#91969A] bg-transparent border-none outline-none"
@@ -219,7 +245,7 @@ export default function CategorySearchScreen() {
                 <img
                   src="/icons/reset.svg"
                   alt="초기화"
-                  className="w-[1rem] h-[1rem] mr-[0.1s2rem] mt-[0.2rem]"
+                  className="w-[1rem] h-[1rem] mr-[0.2rem] mt-[0.2rem]"
                 />
                 초기화
               </button>

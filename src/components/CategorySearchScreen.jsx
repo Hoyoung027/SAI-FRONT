@@ -192,7 +192,7 @@ export default function CategorySearchScreen() {
 
           {Object.keys(categories).map((section, i) => (
             <div key={i} className="pt-[1.5rem]">
-              <h3 className="text-[1.125rem] font-semibold mb-3 text-gray-800 mt-[0rem]">
+              <h3 className="text-[1.125rem] font-semibold mb-3 text-[#000000] mt-[0rem] no-underline select-none">
                 {section}
               </h3>
 

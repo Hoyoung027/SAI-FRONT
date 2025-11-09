@@ -68,7 +68,7 @@ export default function SearchScreen() {
               // ✅ Enter 입력 시 /search-result로 이동
               onKeyDown={(e) => {
                 if (e.key === "Enter" && query.trim() !== "") {
-                  navigate("/search-result");
+                  navigate("/search-result", { state: { query } }); 
                 }
               }}
             />

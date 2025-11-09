@@ -32,12 +32,12 @@ export default function BottomNav() {
       <button
         onClick={() => navigate("/category-search")}
         className={`flex flex-col items-center bg-transparent border-none focus:outline-none ${
-          isActive("/search") ? "text-[#000000]" : "text-[#B5BBC1]"
+          isActive("/category-search") ? "text-[#000000]" : "text-[#B5BBC1]"
         }`}
       >
         <img
           src={
-            isActive("/search")
+            isActive("/category-search")
               ? "/icons/search-active.svg"
               : "/icons/search-inactive.svg"
           }

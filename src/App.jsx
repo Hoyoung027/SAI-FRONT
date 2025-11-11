@@ -1,8 +1,11 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import LoginScreen from "./components/LoginScreen";
-import SignupScreen from "./components/SignupScreen";
-import MainScreen from "./components/MainScreen";
+// import LoginScreen from "./components/LoginScreen";
+// import SignupScreen from "./components/SignupScreen";
+// import MainScreen from "./components/MainScreen";
+import ContentSearchResultPage from "./pages/contentSearchResultPage";
+import ContentSearchPage from "./pages/contentSearchPage";
+import ContentRegisterPage from "./pages/contentRegisterPage"
 
 export default function App() {
   return (
@@ -11,10 +14,13 @@ export default function App() {
         <Router>
           <Routes>
             {/* 기본 경로로 들어오면 /login으로 자동 이동 */}
-            <Route path="/" element={<Navigate to="/login" replace />} /> 
+            {/* <Route path="/" element={<Navigate to="/login" replace />} /> 
             <Route path="/login" element={<LoginScreen />} /> 
             <Route path="/signup" element={<SignupScreen />} />
-            <Route path="/main" element={<MainScreen />} />
+            <Route path="/main" element={<MainScreen />} /> */}
+            <Route path="/content/search" element={<ContentSearchPage />} />
+            <Route path="/content/search/result" element={<ContentSearchResultPage />} />
+            <Route path="/content/register" element={<ContentRegisterPage />} />
           </Routes>
         </Router>
       </div>

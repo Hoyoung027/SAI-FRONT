@@ -32,11 +32,16 @@ export default function QuestionStrip({ title = "" }) {
   const [expanded, setExpanded] = useState(false);
   const label = expanded ? "접기" : "더 보기";
   return (
-    <div className="bg-[#f6f1ee] border-b border-neutral-200">
+    <div className="bg-[#FFEEEA] h-[2.25rem] flex items-center justify-center pl-[1rem] pr-[1rem]">
       
-  <div className="w-full px-3 py-2 flex items-center gap-2 lg:max-w-[760px] lg:mx-auto">
+      <div className="flex items-center justify-center w-[2.0625rem] h-[1.0625rem] rounded-[0.25rem] bg-[#FA502E]">
+        <span className="text-[#FFFFFF] text-[0.75rem] font-bold">
+          질문
+        </span>
+      </div>
+
+      {/* <div className="w-full px-3 py-2 flex items-center gap-2 lg:max-w-[760px] lg:mx-auto"> */}
         
-        <span className="inline-flex items-center rounded-md bg-[#e76e55] text-white text-xs px-2 py-1">질문</span>
         
         <div
           id="q-title"
@@ -56,7 +61,7 @@ export default function QuestionStrip({ title = "" }) {
         >
           {<Chevron expanded={expanded} />}
         </button>
-      </div>
+      {/* </div> */}
     </div>
   );
 }

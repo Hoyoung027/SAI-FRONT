@@ -20,8 +20,8 @@ const apiResponse = {
     startAt : Date.now(),
     endAt : new Date('2025-11-29 10:00:00'),
     seed : [
-        //  {
-            // id: uid(),
+    //      {
+    //         id: uid(),
     //         name: "임의의 닉네임",
     //         text: "기억을 지울 수 있다면 정말 행복한 일일까요?",
     //         time: "오후 7:51",
@@ -138,8 +138,11 @@ function ChatWindow() {
   };
 
   return (
+
     // 1) 바깥을 화면 높이에 맞춰 고정 + 바깥 스크롤 막기
-    <div className="h-dvh w-full bg-white grid grid-rows-[auto,1fr,auto] overflow-hidden">
+    <div className="h-screen w-full bg-white grid grid-rows-[auto,1fr,auto]">
+      
+      
       {/* 3) sticky는 선택. 제거해도 가운데만 스크롤됩니다 */}
       <header className="bg-white">
         <TopBar startAt={apiResponse.startAt} endAt={apiResponse.endAt} onExpire={() => console.log("타이머 종료")} />

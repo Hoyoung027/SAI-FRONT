@@ -47,8 +47,8 @@ export default function TimerBanner({ startAt, endAt, onExpire }) {
 
   return (
     <div
-      className="w-full bg-lime-600 text-white text-center text-sm py-2"
-      aria-live="polite" // 스크린리더에 변화 전달
+      className="w-full h-[1.5rem] bg-[#A4C14D] text-[#FFFFFF] text-[0.875rem] flex items-center justify-center"
+      aria-live="polite"
     >
       {label}
     </div>

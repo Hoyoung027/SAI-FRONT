@@ -1,5 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import ContentSearchResultPage from "./pages/contentSearchResultPage";
+import ContentSearchPage from "./pages/contentSearchPage";
+import ContentRegisterPage from "./pages/contentRegisterPage"
 import ChatPage from "./pages/ChatPage";
 import LoginScreen from "./components/LoginScreen";
 import SignupScreen from "./components/SignupScreen";
@@ -26,6 +29,9 @@ export default function App() {
             <Route path="/category-search" element={<CategorySearchScreen/>}/>
             <Route path="/search-result" element={<SearchResult />} />
             <Route path="/chat" element={<ChatPage />} />
+            <Route path="/content/search" element={<ContentSearchPage />} />
+            <Route path="/content/search/result" element={<ContentSearchResultPage />} />
+            <Route path="/content/register" element={<ContentRegisterPage />} />
           </Routes>
         </Router>
      </div>

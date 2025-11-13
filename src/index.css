@@ -34,3 +34,10 @@ button, input, select, textarea {
   font-weight: 700;
   src: url("/fonts/Pretendard-Bold.otf") format("opentype");
 }
+
+input,
+textarea,
+select {
+  font-size: 16px !important;
+}
+

@@ -106,7 +106,7 @@ export default function QuestionFormScreen() {
 
       <div className="w-full flex items-center justify-center pt-[2rem]">
         <div className="w-[20.4375rem] h-[12.375rem] bg-[#F2F4F8] rounded-[0.5rem] flex-col flex justify-center items-start mx-auto gap-[0.2rem]">
-            <p className="text-center mx-auto">
+            <p className="text-center mx-auto text-[0.875rem] text-[#3B3D40]">
               콘텐츠를 추가하여<br/> 그 안에서 떠오른 질문을 기록해보세요.
             </p>
             <div className="w-[4.75rem] h-[4.75rem] bg-[#FFFFFF] rounded-[0.5rem] mx-auto flex justify-center items-center"> 
@@ -122,16 +122,16 @@ export default function QuestionFormScreen() {
 
       <div className="flex flex-col justify-center">
         <FieldLabel>질문 작성하기</FieldLabel>
-        <div className="w-full flex flex-col items-center justify-center">
-      <textarea
-        style={{ resize: "none" }}
-        value={question}
-        onChange={(e) => setQuestion(e.target.value.slice(0, MAX_QUESTION_LEN))}
-        placeholder={"지금 당신의 생각이 머무는 사이에는 어떤 질문이 있나요?"}
-        className="w-[20.4375rem] h-[8rem] bg-[#FFFFFF] border-[0.1rem] border-[#CCD2D8] rounded-[0.5rem] box-border p-[1rem] placeholder:text-[#CCD2D8] outline-none text-[1rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.8rem]"
-      >
+        <div className="flex flex-col items-center justify-center pl-[1.5rem] pr-[1.5rem]">
+          <textarea
+            style={{ resize: "none" }}
+            value={question}
+            onChange={(e) => setQuestion(e.target.value.slice(0, MAX_QUESTION_LEN))}
+            placeholder={"지금 당신의 생각이 머무는 사이에는 어떤 질문이 있나요?"}
+            className="w-full h-[8rem] bg-[#FFFFFF] border-[0.1rem] border-[#CCD2D8] rounded-[0.5rem] box-border p-[1rem] placeholder:text-[#CCD2D8] outline-none text-[1rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.8rem]"
+          >
           </textarea>
-          <div className="w-[20.4375rem] p-[0.5rem]">
+          <div className="self-start  p-[0.5rem]">
             <span className="text-[#CCD2D8] text-[0.8rem]">욕설, 비속어 사용 시 서비스 이용이 제한될 수 있습니다.</span>
             <span className="text-[#CCD2D8] text-[0.8rem]">  {question.length}/{MAX_QUESTION_LEN}</span>
           </div>
@@ -141,35 +141,34 @@ export default function QuestionFormScreen() {
       
       <div className="flex flex-col justify-center">
         <FieldLabel optional>설명 입력하기</FieldLabel>
-        <div className="w-full flex flex-col items-center justify-center">
-      <textarea
-        style={{ resize: "none" }}
-        value={desc}
-        onChange={(e) => setDesc(e.target.value)}
-        placeholder={"질문에 관해 자유롭게 설명을 덧붙여보세요."}
-        className="w-[20.4375rem] h-[8rem] bg-[#FFFFFF] border-[0.1rem] border-[#CCD2D8] rounded-[0.5rem] box-border p-[1rem] placeholder:text-[#CCD2D8] outline-none text-[1rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.8rem]"
-      >
+        <div className="flex flex-col items-center justify-center pl-[1.5rem] pr-[1.5rem]">
+          <textarea
+            style={{ resize: "none" }}
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            placeholder={"질문에 관해 자유롭게 설명을 덧붙여보세요."}
+            className="w-full h-[8rem] bg-[#FFFFFF] border-[0.1rem] border-[#CCD2D8] rounded-[0.5rem] box-border p-[1rem] placeholder:text-[#CCD2D8] outline-none text-[1rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.8rem]"
+          >
           </textarea>
         </div>
       </div>
 
 
       <div className="flex flex-col justify-center">
-          <FieldLabel optional>
-            태그 추가하기
-          </FieldLabel>
-          <div className="flex flex-col items-center justify-center">
-
-            <input
-              type="text"
-              placeholder="예: #사랑 #기억 #관계"
-              className="w-[20.4375rem] h-[2rem] bg-[#FFFFFF] border-[0.1rem] border-[#CCD2D8] rounded-[0.5rem] box-border p-[1rem] placeholder:text-[#CCD2D8] outline-none text-[0.8rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.8rem]"
-            />
-            <div className="w-[20.4375rem] p-[0.5rem]">
-              <span className="text-[#CCD2D8] text-[0.8rem]">최대 {MAX_TAGS}개까지 선택할 수 있어요.</span>
-            </div>
+        <FieldLabel optional>
+          태그 추가하기
+        </FieldLabel>
+        <div className="flex flex-col items-center justify-center pl-[1.5rem] pr-[1.5rem]">
+          <input
+            type="text"
+            placeholder="예: #사랑 #기억 #관계"
+            className="w-full h-[2rem] bg-[#FFFFFF] border-[0.1rem] border-[#CCD2D8] rounded-[0.5rem] box-border p-[1rem] placeholder:text-[#CCD2D8] outline-none text-[0.8rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.8rem]"
+          />
+          <div className="p-[0.5rem]">
+            <span className="text-[#CCD2D8] text-[0.8rem]">최대 {MAX_TAGS}개까지 선택할 수 있어요.</span>
           </div>
         </div>
+      </div>
 
         
         <div>

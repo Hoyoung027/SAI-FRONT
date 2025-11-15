@@ -1,12 +1,33 @@
 import React from "react";
-import Navbar from "./Navbar";
-import BottomNav from "./BottomNav";
+import Navbar from "../components/main/Navbar";
+import BottomNav from "../components/main/BottomNav";
 
 export default function MainScreen() {
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-[#FAFAFA] font-[Pretendard] pb-20">
       {/* 상단 네비게이션 */}
       <Navbar />
+
+            {/* 하단 탭 메뉴 */}
+      <div className="flex justify-around w-full bg-white mt-[1rem]">
+        {tabs.map((tab) => {
+          const active = location.pathname === tab.path;
+          return (
+            <button
+              key={tab.name}
+              onClick={() => navigate(tab.path)}
+              className={`relative flex flex-col items-center justify-center h-[2.5rem] bg-transparent border-none outline-none pb-2 text-[0.9rem] transition-colors duration-200 ${
+                active ? "text-black font-semibold" : "text-black"
+              }`}
+            >
+              {tab.name}
+              {active && (
+                <span className="absolute mt-[2rem] ml-[0.1rem] left-0 w-full h-[2px] bg-[#FA502E] rounded-full"></span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {/* 🔶 메인 카드 */}
       <div className="w-[21rem] h-[21rem] mt-[1.5rem] rounded-[1.25rem] overflow-hidden shadow-sm relative bg-gradient-to-b from-[#FFDAC0] to-[#FA502E]">

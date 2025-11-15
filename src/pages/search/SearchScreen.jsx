@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
-import BottomNav from "../components/BottomNav";
+import Navbar from "../components/main/Navbar";
+import BottomNav from "../components/main/BottomNav";
 import { useNavigate } from "react-router-dom"; // ✅ 추가
 
 export default function SearchScreen() {

@@ -1,6 +1,10 @@
+@import "tailwindcss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
 
 html, body, #root {
   height: 100%;
@@ -8,6 +12,12 @@ html, body, #root {
   padding: 0;
   background-color: #ffffff;
   font-family: 'Pretendard', sans-serif; /* 🔹 여기에 기본 폰트 지정 */
+}
+
+/* Ensure form controls inherit font from body/html */
+button, input, select, textarea {
+  font: inherit;
+  font-family: inherit;
 }
 
 /* Pretendard 폰트 등록 */

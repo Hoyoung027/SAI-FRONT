@@ -1,15 +1,24 @@
 import React from "react";
+import "./index.css";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import LoginScreen from "./components/LoginScreen";
-import SignupScreen from "./components/SignupScreen";
-import MainScreen from "./components/MainScreen";
-import SearchScreen from "./components/SearchScreen";
-import SearchResult from "./components/SearchResult";
-import CategorySearchScreen from "./components/CategorySearchScreen";
+import ContentSearchResultPage from "./pages/contentSearchResultPage";
+import ContentSearchPage from "./pages/contentSearchPage";
+import ContentRegisterPage from "./pages/contentRegisterPage"
+import ChatPage from "./pages/ChatPage";
+import LoginScreen from "./pages/LoginScreen";
+import SignupScreen from "./pages/SignupScreen";
+import MainScreen from "./pages/MainScreen";
+import SearchScreen from "./pages/SearchScreen";
+import SearchResult from "./pages/search/SearchResult";
+import CategorySearchScreen from "./pages/search/CategorySearchScreen";
 import Notification from "./components/Notification";
 import { NotificationProvider } from "./components/NotificationContext";
+import QuestionPostScreen from "./pages/QuestionPostScreen";
 
 export default function App() {
+  
+  const height = window.innerHeight;
+
   return (
     <NotificationProvider> {/* ✅ 전역 알림 상태 감싸기 */}
       <div className="flex justify-center items-center bg-white">
@@ -25,6 +34,12 @@ export default function App() {
               <Route path="/category-search" element={<CategorySearchScreen/>}/>
               <Route path="/search-result" element={<SearchResult />} />
               <Route path="/notification" element={<Notification />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/content/search" element={<ContentSearchPage />} />
+              <Route path="/content/search/result" element={<ContentSearchResultPage />} />
+              <Route path="/content/register" element={<ContentRegisterPage />} />
+              <Route path="/question" element={<QuestionPostScreen />} />
+          
             </Routes>
           </Router>
         </div>

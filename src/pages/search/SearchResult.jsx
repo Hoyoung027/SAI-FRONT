@@ -1,6 +1,6 @@
 import React from "react";
-import Navbar from "../components/Navbar";
-import BottomNav from "../components/BottomNav";
+import Navbar from "../../components/main/Navbar";
+import BottomNav from "../../components/main/BottomNav";
 import { useNavigate, useLocation } from "react-router-dom";
 
 export default function SearchResult() {

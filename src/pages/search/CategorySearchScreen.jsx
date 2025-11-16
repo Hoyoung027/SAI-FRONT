@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Navbar from "../../components/main/Navbar";
 import BottomNav from "../../components/main/BottomNav";
 import { useNavigate } from "react-router-dom";
+import SearchBar from "../../components/common/SearchBar";
+
 
 export default function CategorySearchScreen() {
   const [selected, setSelected] = useState([]);
@@ -73,21 +75,8 @@ export default function CategorySearchScreen() {
 
       <div className="flex-1 overflow-hidden flex flex-col">
         {/* 🔍 검색창 */}
-        <div className="w-[20.435rem] mx-auto mt-[1.38rem] bg-white z-50">
-          <div className="relative flex items-center bg-[#F2F4F8] rounded-[0.75rem] h-[2.5rem] px-3">
-            <img
-              src="/icons/search.svg"
-              alt="검색"
-              className="w-[1.5rem] h-[1.5rem] ml-[0.5rem] opacity-60"
-            />
-            <input
-              type="text"
-              placeholder="검색어를 입력하세요"
-              className="bg-transparent flex-1 ml-[0.25rem] text-[0.875rem] placeholder-[#9CA3AF] text-[#333] outline-none border-none"
-              onFocus={() => navigate("/search")} 
-           />
-          </div>
-        </div>
+        <SearchBar onFocus={() => navigate("/search")} value="" />
+
 
         {/* 🔥 인기검색어 */}
         <div className="w-full max-w-[500px] mx-auto pl-[1.5rem] pr-6 mt-[1rem] bg-white relative z-20">
@@ -274,7 +263,14 @@ export default function CategorySearchScreen() {
             <div className="flex justify-center">
               <button
                 className="w-[20.435rem] h-[3rem] bg-[#FA502E] text-[#FFFFFF] text-[0.875rem] font-medium rounded-[0.5rem] border-none outline-none"
-                onClick={() => console.log("검색하기", selected)}
+                onClick={() =>
+                  navigate("/search-result", {
+                    state: {
+                      tags: selected,   // ⭐ 선택한 카테고 리 전달!
+                      query: selected.join(", "),  // (선택) SearchBar 에 기본 검색어로도 넣고 싶으면
+                    },
+                  })
+                }
               >
                 검색하기
               </button>

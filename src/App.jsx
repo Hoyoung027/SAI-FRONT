@@ -14,6 +14,12 @@ import CategorySearchScreen from "./pages/search/CategorySearchScreen";
 import Notification from "./components/Notification";
 import { NotificationProvider } from "./components/NotificationContext";
 import QuestionPostScreen from "./pages/QuestionPostScreen";
+import MyPageScreen from "./pages/mypage/MyPageScreen";
+import MyPageChats from "./pages/mypage/MyPageChats";
+import MyPageQuestions from "./pages/mypage/MyPageQuestions";
+import MyPageSaved from "./pages/mypage/MyPageSaved";
+import MyPageScrap from "./pages/mypage/MyPageScrap";
+import ConversationDetailScreen from "./pages/mypage/ConversationDetailScreen";
 
 export default function App() {
   
@@ -39,7 +45,13 @@ export default function App() {
               <Route path="/content/search/result" element={<ContentSearchResultPage />} />
               <Route path="/content/register" element={<ContentRegisterPage />} />
               <Route path="/question" element={<QuestionPostScreen />} />
-          
+              <Route path="/mypage" element={<MyPageScreen />} />
+              <Route path="/mypage/questions" element={<MyPageQuestions />} />
+              <Route path="/mypage/chats" element={<MyPageChats />} />
+              <Route path="/mypage/saved" element={<MyPageSaved />} />
+              <Route path="/mypage/scrap" element={<MyPageScrap />} />
+              <Route path="mypage/chat/:id" element={<ConversationDetailScreen />} />
+
             </Routes>
           </Router>
         </div>

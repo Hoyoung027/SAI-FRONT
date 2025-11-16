@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Navbar from "../../components/main/Navbar";
 import BottomNav from "../../components/main/BottomNav";
 import { useNavigate } from "react-router-dom"; // ✅ 추가
+import SearchBar from "../../components/common/SearchBar";
+
 
 export default function SearchScreen() {
   const navigate = useNavigate(); // ✅ 추가
@@ -51,29 +53,14 @@ export default function SearchScreen() {
       {/* ✅ 스크롤 가능한 메인 영역 */}
       <div className="flex-1 overflow-y-auto px-[1.5rem] pb-[6rem]">
         {/* 🔍 검색창 */}
-        <div className="w-[20.435rem] ml-[0.5rem] mt-[1.38rem] bg-white z-50">
-          <div className="relative flex items-center bg-[#F2F4F8] rounded-[0.75rem] h-[2.5rem] px-3 w-full">
-            <img
-              src="/icons/search.svg"
-              alt="검색"
-              className="w-[1.5rem] h-[1.5rem] ml-[0.5rem] opacity-60"
-            />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="검색어를 입력하세요"
-              autoFocus
-              className="bg-transparent flex-1 ml-[0.25rem] text-[0.875rem] placeholder-[#9CA3AF] text-[#333] outline-none border-none"
-              // ✅ Enter 입력 시 /search-result로 이동
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && query.trim() !== "") {
-                  navigate("/search-result", { state: { query } }); 
-                }
-              }}
-            />
-          </div>
-        </div>
+        <SearchBar
+          noPadding={true}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          autoFocus={true}
+          onEnter={() => navigate("/search-result", { state: { query } })}
+        />
+
 
         {/* 🕓 최근 검색어 */}
         <div className="mt-[1.5rem]">

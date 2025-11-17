@@ -42,11 +42,9 @@ export default function Dropdown({ placeholder, options = [], value, onChange, d
       </button>
 
       {open && (
-
         <ul
           role="listbox"
-        //   className="list-none p-[0rem] m-[0rem] absolute top-full bg-white"
-          className="absolute list-none p-[0rem] m-[0rem] z-10 w-full max-h-56 overflow-auto border-[0rem] bg-[#FFFFFF] py-1 shadow-lg"
+          className="absolute z-10 w-full rounded-[0.5rem] overflow-auto border-none bg-white shadow-lg pl-[0.25rem] pr-[0.25rem] pt-[0.5rem] pb-[0.5rem]"
         >
 
           {options.map(opt => (
@@ -56,8 +54,8 @@ export default function Dropdown({ placeholder, options = [], value, onChange, d
                 role="option"
                 aria-selected={value === opt}
                 onClick={() => { onChange?.(opt); setOpen(false); }}
-                className={`w-full border-[#DEE2E6] border-[0.01rem] bg-[#FFFFFF] ${
-                  value === opt ? "text-[#3B3D40]" : "text-[#DEE2E6]"
+                className={`w-full rounded-[0.25rem] h-[3rem] border-none text-[#B5BBC1] ${
+                  value === opt ? "bg-[#FFEEEA]" : "bg-[#FFFFFF]"
                 }`}
               >
                 {opt}

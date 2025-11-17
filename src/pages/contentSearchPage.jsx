@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ContentTopBar from "../components/contents/contentTopBar";
 
 
@@ -12,7 +13,7 @@ const SAMPLE = {
 };
 
 
-const API_RESULTS = Array.from({ length: 2 }, (_, i) => ({
+const API_RESULTS = Array.from({ length: 4 }, (_, i) => ({
   ...SAMPLE,
   id: i + 1,
   title: `${SAMPLE.title} ${i + 1}`,
@@ -27,19 +28,29 @@ export default function ContentSearchPage({
 }) {
 
   const [query, setQuery] = useState("");
-  const results = initialResults ?? API_RESULTS;
+  const [results, setResults] = useState(initialResults ?? API_RESULTS);
   const [searchDelete, setSearchDelete] = useState(false);
+  const navigate = useNavigate();
+
+  const handleDeleteItem = (id) => {
+    setResults((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleClickRegister = () => {
+    onRegister?.(); 
+    navigate("/content/register");
+  };
 
   return (
 
     <div className="h-screen overflow-y-auto">
 
       <div className="sticky top-0 z-20 bg-white">
-        <ContentTopBar title="콘텐츠 검색" className=""/>
+        <ContentTopBar title="콘텐츠 검색"/>
       </div>
 
       {/* 검색창 */}
-      <div className="flex flex-col items-center justify-center pb-[1.5rem] pl-[1.5rem] pr-[1.5rem]">
+      <div className="flex flex-col items-center justify-center pt-[1rem] pb-[1.5rem] pl-[1.5rem] pr-[1.5rem]">
         <div className = "relative w-full">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -55,35 +66,35 @@ export default function ContentSearchPage({
           <input
             type="text"
             placeholder="책, 영화, 영상 등 콘텐츠 제목을 입력하세요"
-            className="w-full h-[2rem] bg-[#F2F4F8] border-0 rounded-[0.5rem] box-border pl-[2.25rem] placeholder:text-[#CCD2D8] outline-none text-[0.8rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.875rem]"
+            className="w-full h-[2rem] bg-[#F2F4F8] border-0 rounded-[0.5rem] box-border pl-[2.5rem] placeholder:text-[#CCD2D8] outline-none text-[0.8rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.875rem]"
           />
         </div>
       </div>
 
       {/* 검색 결과 */}
-      <div className="flex w-full h-[1rem] items-center justify-between pb-[1rem]">
+      <div className="flex w-full items-center justify-between pb-[1rem] pr-[1.5rem]">
 
-        <h2 className="pl-[1.5rem] text-[1rem] font-bold justify-left flex">
+        <span className="pl-[1.5rem] text-[1rem] font-bold justify-left flex">
           내가 최근에 질문한 콘텐츠
-        </h2>
+        </span>
 
         <div className="relative inline-block text-left">
           {/* 정렬 버튼  */}
           <button
-            className={`text-[#B5BBC1] text-[0.75rem] bg-[#FFFFFF] border-0 justify-end pr-[1.5rem] "text-[#B5BBC1]"`}
+            className="bg-white border-none justify-end"
             type="button"
             onClick={() => setSearchDelete((v) => !v)}
           >
-            기록 삭제
+            <span className="text-[0.75rem] text-[#B5BBC1]">기록 삭제</span>
           </button>
         </div>
       </div>
 
       {/* 검색 결과 */}
       <div>
-        <ul className="list-none w-full bg-white p-[0rem] m-[0rem]">
+        <ul className="w-full bg-white">
             {results.map((item) => (
-              <li key={item.id} className="pt-[0.5rem] pb-[0.5rem] pl-[1.5rem] pr-[1.5rem]">
+              <li key={item.id} className="flex justify-center items-center pt-[0.5rem] pb-[0.5rem] pl-[1.5rem] pr-[1.5rem]">
                 <button
                   onClick={() => onSelectItem?.(item)}
                   className="w-full border-[0rem] flex items-center p-[0rem] bg-[#FFFFFF]"
@@ -102,6 +113,19 @@ export default function ContentSearchPage({
                     </p>
                   </div>
                 </button>
+
+                {searchDelete && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteItem(item.id)} // ✅ 여기서 삭제
+                    className="ml-2"
+                  >  
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M6.30441 17.7168C6.1253 17.5352 6.0247 17.2891 6.0247 17.0324C6.0247 16.7758 6.1253 16.5297 6.30441 16.3481L10.7295 11.8675L6.30441 7.38694C6.21044 7.29828 6.13507 7.19137 6.0828 7.07257C6.03052 6.95378 6.00241 6.82554 6.00015 6.69551C5.99788 6.56548 6.02151 6.43632 6.06961 6.31574C6.11771 6.19515 6.18931 6.08561 6.28013 5.99365C6.37095 5.90169 6.47914 5.8292 6.59823 5.78049C6.71732 5.73178 6.84488 5.70786 6.9733 5.71016C7.10172 5.71245 7.22837 5.74091 7.34569 5.79384C7.46301 5.84677 7.56861 5.92309 7.65617 6.01823L12.0813 10.4988L16.5063 6.01823C16.5939 5.92309 16.6995 5.84677 16.8168 5.79384C16.9341 5.74091 17.0608 5.71245 17.1892 5.71016C17.3176 5.70786 17.4452 5.73178 17.5643 5.78049C17.6834 5.82919 17.7915 5.90169 17.8824 5.99365C17.9732 6.08561 18.0448 6.19515 18.0929 6.31574C18.141 6.43632 18.1646 6.56548 18.1624 6.69551C18.1601 6.82554 18.132 6.95378 18.0797 7.07257C18.0274 7.19136 17.9521 7.29828 17.8581 7.38694L13.433 11.8675L17.8581 16.3481C18.027 16.5317 18.119 16.7745 18.1146 17.0254C18.1103 17.2762 18.0099 17.5156 17.8347 17.6931C17.6594 17.8705 17.423 17.9721 17.1752 17.9765C16.9274 17.981 16.6876 17.8878 16.5063 17.7168L12.0813 13.2362L7.65617 17.7168C7.47684 17.8981 7.23374 18 6.98029 18C6.72683 18 6.48374 17.8981 6.30441 17.7168Z" fill="#B5BBC1"/>
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M6.30441 17.7168C6.1253 17.5352 6.0247 17.2891 6.0247 17.0324C6.0247 16.7758 6.1253 16.5297 6.30441 16.3481L10.7295 11.8675L6.30441 7.38694C6.21044 7.29828 6.13507 7.19137 6.0828 7.07257C6.03052 6.95378 6.00241 6.82554 6.00015 6.69551C5.99788 6.56548 6.02151 6.43632 6.06961 6.31574C6.11771 6.19515 6.18931 6.08561 6.28013 5.99365C6.37095 5.90169 6.47914 5.8292 6.59823 5.78049C6.71732 5.73178 6.84488 5.70786 6.9733 5.71016C7.10172 5.71245 7.22837 5.74091 7.34569 5.79384C7.46301 5.84677 7.56861 5.92309 7.65617 6.01823L12.0813 10.4988L16.5063 6.01823C16.5939 5.92309 16.6995 5.84677 16.8168 5.79384C16.9341 5.74091 17.0608 5.71245 17.1892 5.71016C17.3176 5.70786 17.4452 5.73178 17.5643 5.78049C17.6834 5.82919 17.7915 5.90169 17.8824 5.99365C17.9732 6.08561 18.0448 6.19515 18.0929 6.31574C18.141 6.43632 18.1646 6.56548 18.1624 6.69551C18.1601 6.82554 18.132 6.95378 18.0797 7.07257C18.0274 7.19136 17.9521 7.29828 17.8581 7.38694L13.433 11.8675L17.8581 16.3481C18.027 16.5317 18.119 16.7745 18.1146 17.0254C18.1103 17.2762 18.0099 17.5156 17.8347 17.6931C17.6594 17.8705 17.423 17.9721 17.1752 17.9765C16.9274 17.981 16.6876 17.8878 16.5063 17.7168L12.0813 13.2362L7.65617 17.7168C7.47684 17.8981 7.23374 18 6.98029 18C6.72683 18 6.48374 17.8981 6.30441 17.7168Z" fill="black" fill-opacity="0.2"/>
+                    </svg>
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -109,15 +133,17 @@ export default function ContentSearchPage({
 
       <div className="pr-[1.5rem] pl-[1.5rem] pb-[3rem] pt-[1rem]">
          <button
-              onClick={onRegister}
+              onClick={()=>navigate("/content/register")}
               className="w-full h-[2.5rem] rounded-[0.5rem] border border-[#B5BBC1] bg-[#FFFFFF] flex items-center justify-center text-[0.875rem]"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M15.8335 9.16665H10.8335V4.16665C10.8335 3.94563 10.7457 3.73367 10.5894 3.57739C10.4331 3.42111 10.2212 3.33331 10.0002 3.33331C9.77915 3.33331 9.56719 3.42111 9.41091 3.57739C9.25463 3.73367 9.16683 3.94563 9.16683 4.16665V9.16665H4.16683C3.94582 9.16665 3.73385 9.25444 3.57757 9.41072C3.42129 9.567 3.3335 9.77897 3.3335 9.99998C3.3335 10.221 3.42129 10.433 3.57757 10.5892C3.73385 10.7455 3.94582 10.8333 4.16683 10.8333H9.16683V15.8333C9.16683 16.0543 9.25463 16.2663 9.41091 16.4226C9.56719 16.5788 9.77915 16.6666 10.0002 16.6666C10.2212 16.6666 10.4331 16.5788 10.5894 16.4226C10.7457 16.2663 10.8335 16.0543 10.8335 15.8333V10.8333H15.8335C16.0545 10.8333 16.2665 10.7455 16.4228 10.5892C16.579 10.433 16.6668 10.221 16.6668 9.99998C16.6668 9.77897 16.579 9.567 16.4228 9.41072C16.2665 9.25444 16.0545 9.16665 15.8335 9.16665Z" fill="#3B3D40"/>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M19 11H13V5C13 4.73478 12.8946 4.48043 12.7071 4.29289C12.5196 4.10536 12.2652 4 12 4C11.7348 4 11.4804 4.10536 11.2929 4.29289C11.1054 4.48043 11 4.73478 11 5V11H5C4.73478 11 4.48043 11.1054 4.29289 11.2929C4.10536 11.4804 4 11.7348 4 12C4 12.2652 4.10536 12.5196 4.29289 12.7071C4.48043 12.8946 4.73478 13 5 13H11V19C11 19.2652 11.1054 19.5196 11.2929 19.7071C11.4804 19.8946 11.7348 20 12 20C12.2652 20 12.5196 19.8946 12.7071 19.7071C12.8946 19.5196 13 19.2652 13 19V13H19C19.2652 13 19.5196 12.8946 19.7071 12.7071C19.8946 12.5196 20 12.2652 20 12C20 11.7348 19.8946 11.4804 19.7071 11.2929C19.5196 11.1054 19.2652 11 19 11Z" fill="#B5BBC1"/>
+                <path d="M19 11H13V5C13 4.73478 12.8946 4.48043 12.7071 4.29289C12.5196 4.10536 12.2652 4 12 4C11.7348 4 11.4804 4.10536 11.2929 4.29289C11.1054 4.48043 11 4.73478 11 5V11H5C4.73478 11 4.48043 11.1054 4.29289 11.2929C4.10536 11.4804 4 11.7348 4 12C4 12.2652 4.10536 12.5196 4.29289 12.7071C4.48043 12.8946 4.73478 13 5 13H11V19C11 19.2652 11.1054 19.5196 11.2929 19.7071C11.4804 19.8946 11.7348 20 12 20C12.2652 20 12.5196 19.8946 12.7071 19.7071C12.8946 19.5196 13 19.2652 13 19V13H19C19.2652 13 19.5196 12.8946 19.7071 12.7071C19.8946 12.5196 20 12.2652 20 12C20 11.7348 19.8946 11.4804 19.7071 11.2929C19.5196 11.1054 19.2652 11 19 11Z" fill="black" fill-opacity="0.2"/>
               </svg>
-              직접 등록하기
-            </button>
-        
+              <span className="text-[#B5BBC1] text-[0.875rem]">
+                직접 등록하기
+              </span>
+          </button>
       </div>
     </div>
   );

@@ -81,6 +81,10 @@ export default function ChatPage() {
   const hasOverflowedRef = useRef(false);
   const stickToBottomRef = useRef(false);
 
+  const [searchText, setSearchText] = useState("");
+  const [searchResults, setSearchResults] = useState([]); // 검색된 메시지 id 리스트
+  const [searchIndex, setSearchIndex] = useState(0); // 현재 선택된 검색 결과 index
+
   // 하단 근처 판정 유틸
   const isNearBottom = (el) => {
     const threshold = 24; // px 여유
@@ -127,11 +131,37 @@ export default function ChatPage() {
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, bookmarked: !m.bookmarked } : m)));
   };
 
-  const handleSend = (text, s) => {
-    setMessages((prev) => [
-      ...prev,
-      { id: uid(), text, side: s, time: nowKo() },
-    ]);
+  // const handleSend = (text, s) => {
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { id: uid(), text, side: s, time: nowKo() },
+  //   ]);
+  // };
+
+  const handleSend = (content, s, type) => {
+    if (type === "image") {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid(),
+          images: content,       // 이미지 배열
+          type: "image",
+          side: s,
+          time: nowKo(),
+        },
+      ]);
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid(),
+          text: content,        // 텍스트 메시지
+          type: "text",
+          side: s,
+          time: nowKo(),
+        },
+      ]);
+    }
   };
 
   return (
@@ -139,7 +169,12 @@ export default function ChatPage() {
     <div className="flex flex-col h-screen w-full bg-white">
       
       <header className="bg-white">
-        <ChatTopBar startAt={apiResponse.startAt} endAt={apiResponse.endAt} onExpire={() => console.log("타이머 종료")} />
+        <ChatTopBar 
+          startAt={apiResponse.startAt} 
+          endAt={apiResponse.endAt} 
+          onExpire={() => console.log("타이머 종료")} 
+          onSearchChange={setSearchText}
+        />
         <QuestionStrip title={apiResponse.title} />
       </header>
 
@@ -171,7 +206,7 @@ export default function ChatPage() {
             
             <div className="flex w-full flex-col justify-start items-stretch">
               {messages.map((m) => (
-                <ChatBubble key={m.id} msg={m} onToggleBookmark={toggleBookmark} />
+                <ChatBubble key={m.id} msg={m} onToggleBookmark={toggleBookmark} highlightWord={searchText} />
               ))}
             </div>
           </div>

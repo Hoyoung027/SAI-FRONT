@@ -31,7 +31,10 @@ export default function TopBar({ startAt, endAt, onExpire }) {
               ref={inputRef}
               type="text"
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                props.onSearchChange(e.target.value);
+              }}              
               className="w-full rounded-[0.38rem] bg-[#F2F4F8] border-none outline-none text-[0.875rem] pl-[0.75rem] pr-[0.75rem]"
             />
           </div>

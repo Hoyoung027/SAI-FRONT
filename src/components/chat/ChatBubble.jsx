@@ -14,11 +14,14 @@ function Avatar({ initials = "" }) {
 
 
 export default function ChatBubble({ msg, onToggleBookmark }) {
+ 
   const isLeft = msg.side === "left";
+  const type = msg.type || "text";
 
   return (
     
     <div className={`w-full flex pl-[0.625rem] pr-[0.625rem] pt-[0.5rem] pb-[0.5rem] ${isLeft ? "justify-start" : "justify-end"}`}>
+
 
       {isLeft && (
         <div className="flex flex-col items-center">
@@ -59,18 +62,46 @@ export default function ChatBubble({ msg, onToggleBookmark }) {
         <div className="w-full flex items-end">
           {/* message bubble */}
           <div className={`${isLeft ? "pl-[0.5rem]" : "pr-[0.5rem]"}`}>
-            <div
-              className={
-                `relative max-w-[15rem] rounded-[1rem] pl-[1.25rem] pr-[1.25rem] pt-[0.875rem] pb-[0.875rem] ` +
-                (isLeft
-                  ? "border border-[#DEE2E6] bg-[#FFFFFF]"
-                  : "bg-[#FA502E]")
-                }
+
+
+              {/* 텍스트 메시지 */}
+              {type === "text" && (
+                <div
+                  className={`relative max-w-[15rem] rounded-[1rem] pl-[1.25rem] pr-[1.25rem] pt-[0.875rem] pb-[0.875rem] 
+                              ${isLeft ? "border border-[#DEE2E6] bg-[#FFFFFF]" : "bg-[#FA502E]"}`}
                 >
-              <span className={`text-[0.875rem] ${isLeft ? "text-[#191D1F]" : "text-[#FFFFFF]"}`}>
-                {msg.text}
-              </span>
-            </div>
+                <span
+                  className={`text-[0.875rem] ${
+                    isLeft ? "text-[#191D1F]" : "text-[#FFFFFF]"
+                  }`}
+                >
+                  {msg.text}
+                </span>
+              </div>
+              )}
+              
+
+              {/* 이미지 메시지 */}
+              {type === "image" && msg.images && (
+                <div
+                  className={`relative max-w-[15rem] rounded-[1rem] pl-[1.25rem] pr-[1.25rem] pt-[0.875rem] pb-[0.875rem]`}
+                >
+                  <div
+                    className={`grid ${
+                      msg.images.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                    } gap-[0.5rem]`}
+                  >
+                    {msg.images.map((src, idx) => (
+                      <img
+                        key={idx}
+                        src={src}
+                        alt={`uploaded-${idx}`}
+                        className="w-full max-w-[10rem] rounded-[0.5rem] border border-[#DEE2E6]"
+                      />
+                    ))}          
+                </div>
+              </div>
+              )}
           </div>
         </div>
 

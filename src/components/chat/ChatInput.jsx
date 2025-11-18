@@ -4,15 +4,74 @@ export default function ChatInput({ onSend, side = "right" }) {
   const [text, setText] = useState("");
   const[open, setOpen] = useState(false);
 
-  const submit = () => {
+  const [previewImages, setPreviewImages] = useState([]); // 미리보기 이미지 list
+  const [showPreview, setShowPreview] = useState(false);
+
+  const cameraInputRef = React.useRef(null);
+  const albumInputRef = React.useRef(null);
+
+  const sendText = () => {
     const t = text.trim();
     if (!t) return;
-    onSend(t, side);
+    onSend(t, side, "text");
     setText("");
   };
 
+  
+  // 카메라 촬영 
+  const handleCamera = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setPreviewImages([url]);
+    setShowPreview(true);
+  };
+
+  // 앨범 다중 선택 처리
+  const handleAlbum = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    const urls = files.map((f) => URL.createObjectURL(f));
+    setPreviewImages(urls);
+    setShowPreview(true);
+  };
+
+  // 미리보기 → 전송
+  const sendImages = () => {
+    onSend(previewImages, side, "image");
+    setPreviewImages([]);
+    setShowPreview(false);
+  };
+
+  // 미리보기 → 취소
+  const cancelPreview = () => {
+    setPreviewImages([]);
+    setShowPreview(false);
+  };
+
   return (
+    <>
+      <input
+         type="file"
+         accept="image/*"
+         capture="environment"
+         ref={cameraInputRef}
+         style={{ display: "none" }}
+         onChange={handleCamera}
+       />
+  
+       <input
+         type="file"
+         accept="image/*"
+         multiple
+         ref={albumInputRef}
+         style={{ display: "none" }}
+         onChange={handleAlbum}
+       />
     <div className="flex items-center border-none border-none pt-[1rem] pl-[1.5rem] pr-[1.5rem] pb-[1rem] shadow-[0_-3px_4px_rgba(0,0,0,0.08)]">
+      
+
       <button
         type="button"
         aria-label="추가"
@@ -56,11 +115,13 @@ export default function ChatInput({ onSend, side = "right" }) {
               <div className="flex flex-col justify-center items-center">
                 <button
                   type="camera"
-                  className="flex justify-center items-center bg-[#F2F4F8] w-[3rem] h-[3rem] rounded-full"
+                  className="relative flex justify-center items-center bg-[#F2F4F8] w-[3rem] h-[3rem] rounded-full"
+                  onClick={() => cameraInputRef.current.click()}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="27" height="24" viewBox="0 0 27 24" fill="none">
-                    <path d="M24 4H20.552L16.9427 0.390667C16.6927 0.140601 16.3536 7.55165e-05 16 0H10.6667C10.3131 7.55165e-05 9.97399 0.140601 9.724 0.390667L6.11467 4H2.66667C1.196 4 0 5.196 0 6.66667V21.3333C0 22.804 1.196 24 2.66667 24H24C25.4707 24 26.6667 22.804 26.6667 21.3333V6.66667C26.6667 5.196 25.4707 4 24 4ZM13.3333 20C9.72 20 6.66667 16.9467 6.66667 13.3333C6.66667 9.72 9.72 6.66667 13.3333 6.66667C16.9467 6.66667 20 9.72 20 13.3333C20 16.9467 16.9467 20 13.3333 20Z" fill="#FF7053"/>
-                  </svg>
+                    <path d="M24 4H20.552L16.9427 0.390667C16.6927 0.140601 16.3536 7.55165e-05 16 0H10.6667C10.3131 7.55165e-05 9.97399 0.140601 9.724 0.390667L6.11467 4H2.66667C1.196 4 0 5.196 0 6.66667V21.3333C0 22.804 1.196 24 2.66667 24H24C25.4707 24 26.6667 22.804 26.6667 21.3333V6.66667C26.6667 5.196 25.4707 4 24 4ZM13.3333 20C9.72 20 6.66667 16.9467 6.66667 13.3333C6.66667 9.72 9.72 6.66667 13.3333 6.66667C16.9467 6.66667 20 9.72 20 13.3333C20 16.9467 16.9467 20 13.3333 20Z" fill="#FF7053">
+                    </path>
+                  </svg>                  
                 </button>
                 <span className="text-[#3B3D40] text-[0.75rem]">
                   카메라
@@ -71,6 +132,7 @@ export default function ChatInput({ onSend, side = "right" }) {
                 <button
                   type="album"
                   className="flex justify-center items-center bg-[#F2F4F8] w-[3rem] h-[3rem] rounded-full"
+                  onClick={() => albumInputRef.current.click()}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 27 27" fill="none">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M1.952 1.952C0 3.90667 0 7.048 0 13.3333C0 19.6187 0 22.7613 1.952 24.7133C3.90667 26.6667 7.048 26.6667 13.3333 26.6667C19.6187 26.6667 22.7613 26.6667 24.7133 24.7133C26.6667 22.7627 26.6667 19.6187 26.6667 13.3333C26.6667 7.048 26.6667 3.90533 24.7133 1.952C22.7627 0 19.6187 0 13.3333 0C7.048 0 3.90533 0 1.952 1.952ZM18.6667 10.6667C19.3739 10.6667 20.0522 10.3857 20.5523 9.88562C21.0524 9.38552 21.3333 8.70724 21.3333 8C21.3333 7.29276 21.0524 6.61448 20.5523 6.11438C20.0522 5.61428 19.3739 5.33333 18.6667 5.33333C17.9594 5.33333 17.2811 5.61428 16.781 6.11438C16.281 6.61448 16 7.29276 16 8C16 8.70724 16.281 9.38552 16.781 9.88562C17.2811 10.3857 17.9594 10.6667 18.6667 10.6667ZM5.76 14.8053C6.15984 14.4337 6.69048 14.2353 7.23607 14.2535C7.78166 14.2718 8.29787 14.5051 8.672 14.9027L12.2027 18.6493C12.7174 19.196 13.4151 19.5342 14.1631 19.5996C14.911 19.665 15.6569 19.453 16.2587 19.004C16.6548 18.7093 17.1424 18.5641 17.6353 18.5941C18.1281 18.6242 18.5945 18.8274 18.952 19.168L21.976 22.056C22.1691 22.2308 22.4229 22.3234 22.6833 22.314C22.9436 22.3046 23.19 22.1939 23.37 22.0056C23.55 21.8172 23.6494 21.566 23.6471 21.3055C23.6447 21.045 23.5407 20.7957 23.3573 20.6107L20.3333 17.72C19.6339 17.0531 18.7211 16.6551 17.7565 16.5965C16.7919 16.5379 15.8376 16.8226 15.0627 17.4C14.854 17.5554 14.5955 17.6286 14.3364 17.6057C14.0772 17.5829 13.8355 17.4655 13.6573 17.276L10.128 13.5293C9.39177 12.7478 8.37637 12.2892 7.3033 12.2535C6.23022 12.2178 5.18657 12.6079 4.4 13.3387L3.32 14.3413C3.12551 14.5217 3.01062 14.7719 3.00062 15.037C2.99062 15.302 3.08632 15.5602 3.26667 15.7547C3.44701 15.9492 3.69724 16.064 3.96229 16.074C4.22734 16.084 4.48551 15.9883 4.68 15.808L5.76 14.8053Z" fill="#FF7053"/>
@@ -91,7 +153,7 @@ export default function ChatInput({ onSend, side = "right" }) {
                   </svg>
                 </button>
                 <span className="text-[#3B3D40] text-[0.75rem]">
-                  앨범
+                  파일
                 </span>
               </div>
 
@@ -114,16 +176,11 @@ export default function ChatInput({ onSend, side = "right" }) {
       )}
 
 
-
-
-
-
-
       <div className="flex-1">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), submit())}
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), sendText())}
           placeholder="메시지 전송"
           className="w-full pl-[1rem] border-none bg-[#FFFFFF] text-[15px] outline-none placeholder:text-[#B5BBC1] text-[#191D1F]"
         />
@@ -131,7 +188,7 @@ export default function ChatInput({ onSend, side = "right" }) {
 
       <button
         type="button"
-        onClick={submit}
+        onClick={sendText}
         aria-label="전송"
         className="rounded-full bg-[#FFFFFF] text-white border-none"
       >
@@ -155,5 +212,46 @@ export default function ChatInput({ onSend, side = "right" }) {
         </svg>
       </button>
     </div>
+
+    {showPreview && (
+      <div
+        className="fixed inset-0 bg-black/20 z-50 flex flex-col items-center justify-center p-[1.5rem]"
+        onClick={cancelPreview}  
+      >
+        <div
+          className="bg-white rounded-lg p-4 max-w-[90%] max-h-[80%] overflow-auto"
+          onClick={(e) => e.stopPropagation()}  
+        >
+          <div className={`grid ${previewImages.length === 1 ? "grid-cols-1" : "grid-cols-2"} gap-[1rem]`}>
+            {previewImages.map((src, idx) => (
+              <img key={idx} src={src} className="w-full rounded-[0.5rem] border-[0.1rem] border-[#DEE2E6]" alt="preview" />
+            ))}
+          </div>
+
+          <div className="flex justify-between mt-[1.5rem]">
+            <button 
+              className="flex justify-center items-center h-[2.125rem] bg-[#CCD2D8] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
+              onClick={cancelPreview}
+            >
+              <span className="text-white text-[0.75rem]">
+                취소
+              </span>
+            </button>
+
+            <button 
+              className="flex justify-center items-center h-[2.125rem] bg-[#FA502E] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
+              onClick={sendImages}
+            >
+              <span className="text-white text-[0.75rem]">
+                전송
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import TopBar from "../components/chat/TopBar";
+import ChatTopBar from "../components/chat/ChatTopBar";
 import ChatBubble from "../components/chat/ChatBubble";
 import ChatInput from "../components/chat/ChatInput";
 import QuestionStrip from "../components/chat/QuestionStrip";
@@ -139,7 +139,7 @@ export default function ChatPage() {
     <div className="flex flex-col h-screen w-full bg-white">
       
       <header className="bg-white">
-        <TopBar startAt={apiResponse.startAt} endAt={apiResponse.endAt} onExpire={() => console.log("타이머 종료")} />
+        <ChatTopBar startAt={apiResponse.startAt} endAt={apiResponse.endAt} onExpire={() => console.log("타이머 종료")} />
         <QuestionStrip title={apiResponse.title} />
       </header>
 

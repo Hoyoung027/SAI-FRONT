@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import ContentSearchResultPage from "./pages/contentSearchResultPage";
 import ContentSearchPage from "./pages/contentSearchPage";
 import ContentRegisterPage from "./pages/contentRegisterPage"
+import ChatListPage from "./pages/ChatListPage";
 import ChatPage from "./pages/ChatPage";
 import LoginScreen from "./components/LoginScreen";
 import SignupScreen from "./components/SignupScreen";
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/search" element={<SearchScreen />} />
             <Route path="/category-search" element={<CategorySearchScreen/>}/>
             <Route path="/search-result" element={<SearchResult />} />
+            <Route path="/chat-list" element={<ChatListPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/content/search" element={<ContentSearchPage />} />
             <Route path="/content/search/result" element={<ContentSearchResultPage />} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import TopBar from "../components/chat/TopBar";
+import ChatTopBar from "../components/chat/ChatTopBar";
 import ChatBubble from "../components/chat/ChatBubble";
 import ChatInput from "../components/chat/ChatInput";
 import QuestionStrip from "../components/chat/QuestionStrip";
@@ -72,7 +72,7 @@ const apiResponse = {
 }
 
 
-function ChatWindow() {
+export default function ChatPage() {
   const [messages, setMessages] = useState(apiResponse.seed);
   const [side, setSide] = useState("right");
   const scrollRef = useRef(null);
@@ -81,19 +81,15 @@ function ChatWindow() {
   const hasOverflowedRef = useRef(false);
   const stickToBottomRef = useRef(false);
 
+  const [searchText, setSearchText] = useState("");
+  const [searchResults, setSearchResults] = useState([]); // 검색된 메시지 id 리스트
+  const [searchIndex, setSearchIndex] = useState(0); // 현재 선택된 검색 결과 index
+
   // 하단 근처 판정 유틸
   const isNearBottom = (el) => {
     const threshold = 24; // px 여유
     return el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
   };
-
-  // 최초 마운트 시 현재 상태 측정
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    hasOverflowedRef.current = el.scrollHeight > el.clientHeight + 1;
-    stickToBottomRef.current = isNearBottom(el);
-  }, []);
 
   // 스크롤 핸들러: 사용자 위치 추적
   const handleScroll = () => {
@@ -103,73 +99,124 @@ function ChatWindow() {
     hasOverflowedRef.current = el.scrollHeight > el.clientHeight + 1;
   };
 
-  // 메시지 추가 시 동작 규칙
-  // - 아직 오버플로우가 아니면(화면을 다 채우지 않으면) 스크롤하지 않음: 상단부터 차곡차곡
-  // - 처음으로 오버플로우가 발생하는 순간엔 하단으로 한 번 이동하여 최신이 아래에 보이게
-  // - 이후에는 사용자가 하단 근처일 때만 하단 고정(스무스), 위로 올려 본 상태면 스크롤 유지
+  // 메시지 추가 시 동작 규칙 및 화면 제어 로직
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
 
-    // 치명적인 경계값 문제 방지: 거의 동일한 높이 차이는 오버플로우로 보지 않음
-    const delta = el.scrollHeight  - el.clientHeight;
-    const overflowNow = delta > 8; // 8px 이하 차이는 비오버플로우로 간주
+    if (!didMountRef.current) {
+      el.scrollTop = el.scrollHeight;        
+      hasOverflowedRef.current = el.scrollHeight > el.clientHeight + 1;
+      stickToBottomRef.current = true;       
+      didMountRef.current = true;
+      return;
+    }
+
+    const delta = el.scrollHeight - el.clientHeight;
+    const overflowNow = delta > 8; 
 
     if (overflowNow && stickToBottomRef.current) {
-      el.scrollTo({ top: el.scrollHeight, behavior: didMountRef.current ? 'smooth' : 'auto' });
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior: "smooth",
+      });
     } else if (!overflowNow) {
-      // 아직 화면을 다 채우지 못했다면 항상 최상단에 고정
       el.scrollTop = 0;
     }
 
     hasOverflowedRef.current = overflowNow;
-    didMountRef.current = true;
   }, [messages.length]);
 
   const toggleBookmark = (id) => {
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, bookmarked: !m.bookmarked } : m)));
   };
 
-  const handleSend = (text, s) => {
-    setMessages((prev) => [
-      ...prev,
-      { id: uid(), text, side: s, time: nowKo() },
-    ]);
+  // const handleSend = (text, s) => {
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { id: uid(), text, side: s, time: nowKo() },
+  //   ]);
+  // };
+
+  const handleSend = (content, s, type) => {
+    if (type === "image") {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid(),
+          images: content,       // 이미지 배열
+          type: "image",
+          side: s,
+          time: nowKo(),
+        },
+      ]);
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid(),
+          text: content,        // 텍스트 메시지
+          type: "text",
+          side: s,
+          time: nowKo(),
+        },
+      ]);
+    }
   };
 
   return (
 
-    // 1) 바깥을 화면 높이에 맞춰 고정 + 바깥 스크롤 막기
-    <div className="h-screen w-full bg-white grid grid-rows-[auto,1fr,auto]">
+    <div className="flex flex-col h-screen w-full bg-white">
       
-      {/* 3) sticky는 선택. 제거해도 가운데만 스크롤됩니다 */}
       <header className="bg-white">
-        <TopBar startAt={apiResponse.startAt} endAt={apiResponse.endAt} onExpire={() => console.log("타이머 종료")} />
+        <ChatTopBar 
+          startAt={apiResponse.startAt} 
+          endAt={apiResponse.endAt} 
+          onExpire={() => console.log("타이머 종료")} 
+          onSearchChange={setSearchText}
+        />
         <QuestionStrip title={apiResponse.title} />
       </header>
 
-      {/* 2) 가운데 행(parent)에 min-h-0 필수 */}
-     <main className="w-full px-3 min-h-0 lg:max-w-[760px] lg:mx-auto ">
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="h-full overflow-y-auto pt-4 pb-0 overscroll-contain flex flex-col items-stretch"
-        >
-          <div className="flex w-full max-w-[680px] flex-col justify-start items-stretch gap-5 lg:mx-auto">
-            {messages.map((m) => (
-              <ChatBubble key={m.id} msg={m} onToggleBookmark={toggleBookmark} />
-            ))}
+
+    <main className="flex-1 min-h-0 w-full flex flex-col pt-[3.5625rem]">
+
+
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="h-full overflow-y-auto flex flex-col items-stretch"
+          >
+            <div className="flex justify-center items-center pl-[1.5rem] pr-[1.5rem] pb-[0.5rem]">
+              <div className="w-full flex justify-center items-center bg-[#F2F4F8] pt-[0.63rem] pb-[0.63rem] pl-[0.5rem] pr-[0.5rem]">
+                <span className="text-[0.75rem] text-[#191D1F]">
+                  {apiResponse.title}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-center items-center pt-[0.1rem] pb-[1rem]">
+              <span className="text-[#3B3D40] text-[0.625rem] text-center">
+                질문에 대한 대화가 시작되었습니다.<br></br>
+                지금부터 42분 동안 집중해서 대화를 나눠보세요.
+              </span>
+            </div>
+            
+            <div className="flex w-full flex-col justify-start items-stretch">
+              {messages.map((m) => (
+                <ChatBubble key={m.id} msg={m} onToggleBookmark={toggleBookmark} highlightWord={searchText} />
+              ))}
+            </div>
           </div>
         </div>
+
       </main>
 
-      <footer className="bg-white">
+      <footer className="bg-white justify-center items-center">
         <ChatInput onSend={handleSend} side={side} />
       </footer>
     </div>
   );
-}
-
-export default function ChatPage() {
-  return <ChatWindow />;
 }

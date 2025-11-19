@@ -42,6 +42,7 @@ export default function App() {
               <Route path="/detail" element={<DetailScreen />} />              
               <Route path="/notification" element={<Notification />} />
               <Route path="/chat" element={<ChatPage />} />
+              <Route path="/chat-list" element={<ChatListPage />} />
               <Route path="/content/search" element={<ContentSearchPage />} />
               <Route path="/content/search/result" element={<ContentSearchResultPage />} />
               <Route path="/content/register" element={<ContentRegisterPage />} />

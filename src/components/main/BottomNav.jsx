@@ -49,7 +49,7 @@ export default function BottomNav() {
 
       {/* 채팅 */}
       <button
-        onClick={() => navigate("/chat")}
+        onClick={() => navigate("/chat-list")}
         className={`flex flex-col items-center relative bg-transparent border-none focus:outline-none ${
           isActive("/chat") ? "text-[#000000]" : "text-[#B5BBC1]"
         }`}

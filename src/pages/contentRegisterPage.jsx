@@ -3,11 +3,11 @@ import ContentTopBar from "../components/contents/contentTopBar";
 import Dropdown from "../components/contents/dropDown";
 
 // 분류 옵션
-const MAJOR = ["도서", "영화", "영상"];
+const MAJOR = ["책", "영화/TV", "기타 콘텐츠"];
 const MINOR_BY_MAJOR = {
-  도서: ["소설", "에세이", "인문", "경제"],
-  영화: ["드라마", "액션", "코미디"],
-  영상: ["다큐", "강연", "인터뷰"],
+  "책": ["소설", "에세이", "인문", "경제"],
+  "영화/TV": ["드라마", "액션", "코미디"],
+  "기타 콘텐츠": ["다큐", "강연", "인터뷰"],
 };
 
 function ReturnLabel({ text, optional = false }) {
@@ -26,6 +26,10 @@ export default function ContentRegisterPage({ onRegister }) {
   // 선택 상태
   const [major, setMajor] = useState("");
   const [minor, setMinor] = useState("");
+  const [contentsName, setContentsName] = useState("");
+  const [creator, setCreator] = useState("");
+  const [contentDesc, setContentDesc] = useState("");
+  const [contentURL, setContentURL] = useState("");
 
   // 대분류 바뀌면 소분류 리셋
   useEffect(() => {
@@ -34,6 +38,9 @@ export default function ContentRegisterPage({ onRegister }) {
 
   const [preview, setPreview] = useState(null);
   const fileRef = useRef(null);
+
+  const canSubmit =
+    contentsName.trim().length > 0 && major.trim().length > 0 && minor.trim().length > 0;
 
   const handleImage = (e) => {
     const f = e.target.files?.[0];
@@ -90,6 +97,8 @@ export default function ContentRegisterPage({ onRegister }) {
             <ReturnLabel text="콘텐츠명" optional={false} />
             <input
               type="text"
+              value={contentsName}
+              onChange={(e) => setContentsName(e.target.value)}
               placeholder="콘텐츠 제목을 입력하세요"
               className="w-full h-[2rem] bg-[#FFFFFF] border-0 border-b border-[#CCD2D8] box-border placeholder:text-[#CCD2D8] outline-none text-[0.8rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.875rem]"
             />
@@ -97,16 +106,18 @@ export default function ContentRegisterPage({ onRegister }) {
         </div>
 
     <div className="flex flex-col items-center justify-center pb-[1.5rem] pl-[1.5rem] pr-[1.5rem]">
-      <div className = "relative w-full border-0 border-b border-[#CCD2D8]">
+      <div className = "relative w-full border-none border-[#CCD2D8]">
         <ReturnLabel text="콘텐츠 유형" optional={false} /> 
-              <div className="flex flex-row">
+              <div className="flex flex-row mt-[0.5rem]">
                 <Dropdown
+                  itemClassName=""
                   placeholder="대분류"
                   options={MAJOR}
                   value={major}
                   onChange={setMajor}
                 />
-                <div className="w-[0.5rem]"></div>
+              <div className="w-[0.5rem]">
+              </div>
                 <Dropdown
                   placeholder="소분류"
                   options={major ? (MINOR_BY_MAJOR[major] || []) : []}
@@ -123,6 +134,8 @@ export default function ContentRegisterPage({ onRegister }) {
           <ReturnLabel text="창작자" optional={true} />
           <input
             type="text"
+            value={creator}
+            onChange={(e) => setCreator(e.target.value)}
             placeholder="창작자 이름을 입력하세요"
             className="w-full h-[2rem] bg-[#FFFFFF] border-0 border-b border-[#CCD2D8] box-border placeholder:text-[#CCD2D8] outline-none text-[0.8rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.875rem]"
           />
@@ -134,6 +147,8 @@ export default function ContentRegisterPage({ onRegister }) {
           <ReturnLabel text="내용" optional={true} />
           <input
             type="text"
+            value={contentDesc}
+            onChange={(e) => setContentDesc(e.target.value)}
             placeholder="어떤 내용인지 간단히 적어주세요"
             className="w-full h-[2rem] bg-[#FFFFFF] border-0 border-b border-[#CCD2D8] box-border placeholder:text-[#CCD2D8] outline-none text-[0.8rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.875rem]"
           />
@@ -145,6 +160,8 @@ export default function ContentRegisterPage({ onRegister }) {
           <ReturnLabel text="링크" optional={true} />
           <input
             type="text"
+            value={contentURL}
+            onChange={(e) => setContentURL(e.target.value)}
             placeholder="관련 URL을 입력하세요"
             className="w-full h-[2rem] bg-[#FFFFFF] border-0 border-b border-[#CCD2D8] box-border placeholder:text-[#CCD2D8] outline-none text-[0.8rem] font-pre placeholder:[font-family:inherit] placeholder:text-[0.875rem]"
           />
@@ -152,14 +169,23 @@ export default function ContentRegisterPage({ onRegister }) {
       </div> 
 
       {/* 하단 버튼 */}
-<div className="pr-[1.5rem] pl-[1.5rem] pb-[3rem]">
+
+      <div className="shrink-0 pl-[1.5rem] pr-[1.5rem] pb-[1rem] pt-[0rem] bg-white">
         <button
-          onClick={onRegister}
-          className="w-full font-bold h-[2.5rem] rounded-[0.5rem] border-[0rem] bg-[#FA502E] flex items-center justify-center text-[#FFFFFF] text-[1rem]"
+          type="button"
+          onClick={onRegister}              
+          disabled={!canSubmit}           
+          className={`w-full h-[2.5rem] rounded-[0.5rem] text-center transition-colors
+            ${canSubmit
+              ? "bg-[#FA502E] cursor-pointer"
+              : "bg-[#CCD2D8] cursor-not-allowed"
+            }`}
         >
-          콘텐츠 등록하기
+          <span className="text-[1rem] text-white font-bold">
+            콘텐츠 등록하기
+          </span>
         </button>
-      </div> 
+      </div>
     </div>
   );
 }

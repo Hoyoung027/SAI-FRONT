@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import ContentSearchResultPage from "./pages/contentSearchResultPage";
 import ContentSearchPage from "./pages/contentSearchPage";
 import ContentRegisterPage from "./pages/contentRegisterPage"
+import ChatListPage from "./pages/ChatListPage";
 import ChatPage from "./pages/ChatPage";
 import LoginScreen from "./pages/LoginScreen";
 import SignupScreen from "./pages/SignupScreen";
@@ -54,5 +55,6 @@ export default function App() {
         </div>
       </div>
     </NotificationProvider>
+
   );
 }

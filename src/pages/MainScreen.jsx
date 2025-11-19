@@ -1,11 +1,17 @@
-import React from "react";
 import Navbar from "../components/main/Navbar.jsx";
 import BottomNav from "../components/main/BottomNav.jsx";
 import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+
 
 export default function MainScreen() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [likes, setLikes] = useState({
+  card1: false,
+  });
+  
+
 
   // 🔶 탭 메뉴 데이터
   const tabs = [
@@ -100,60 +106,10 @@ export default function MainScreen() {
         {/* 🔥🔥 섹션1: 가로 스크롤 적용된 부분 🔥🔥 */}
         <div className="w-full mt-4 overflow-x-auto overflow-y-visible no-scrollbar relative z-10" style={{ overflowY: "visible" }}>
           <div className="flex gap-4 w-max pr-6">
+          {/* 카드 1 */}
+          <div className="w-[20.4375rem] h-[20.3875rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-6 mx-[1.5rem] my-[1rem] relative">
 
-            {/* 카드 1 */}
-            <div className="w-[20.4375rem] h-[15rem] ml-[1.5rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-5 mx-[1.5rem] my-[1rem]">
-              {/* 따옴표 + 문장(오른쪽 따옴표는 마지막 줄 끝) */}
-              <div className="relative w-full flex items-start justify-center">
-
-                {/* 왼쪽 따옴표 */}
-                <img
-                  src="/icons/quote.svg"
-                  alt="quote"
-                  className="w-[1rem] h-[1rem] opacity-70 mt-[0.5rem] ml-[-1rem] flex-shrink-0 mr-2"
-                />
-
-                {/* 문장 + 오른쪽 따옴표 absolute */}
-                <div className="relative max-w-[14rem] text-center mt-[0.5rem] leading-[1.5]">
-                  <p className="text-[1rem] font-medium text-gray-800">
-                    기억을 지운다는 건 고통을 없애기 위함일까,<br />
-                    아니면 다시 사랑하기 위해 자신을 비워내는 행위일까?
-                  </p>
-
-                  {/* 오른쪽 따옴표 → 마지막 줄 끝에 자동 정렬 */}
-                  <img
-                    src="/icons/quote-down.svg"
-                    alt="quote close"
-                    className="w-[1rem] h-[1rem] opacity-70 absolute right-0 bottom-0 translate-y-[20%]"
-                  />
-                </div>
-              </div>
-              <div className="w-full h-[0.0625rem] bg-[#E7EBEF] mt-[2rem]"></div>
-              <div className="flex justify-between items-center mt-[0.5rem]">
-                <div>
-                  <p className="text-[0.625rem] text-[#3B3D40] mt-[-1.44rem]">익명의 닉네임</p>
-                  <p className="text-[0.75rem] font-bold text-gray-700 mt-[0.25rem] line-clamp-1">
-                    이터널 선샤인 (Eternal Sunshine)
-                  </p>
-                </div>
-                <button className="bg-[#FA502E] w-[6.6875rem] h-[2.125rem] ml-[1rem] mt-[1.69rem] rounded-[0.5rem]">
-                  <p className="text-white text-[0.75rem] text-bold">대화 참여하기 </p>
-                </button>
-              </div>
-                {/* 참여 인원 */}
-                <div className="flex items-center w-[2.25rem] h-[1.315rem] mt-[-1.19rem] gap-[0.25rem] text-[0.75rem] text-[#6B7280] bg-[#F2F4F8] rounded-[0.25rem] px-[0.4rem] py-[0.2rem]">
-                  <img
-                    src="/icons/people.svg"
-                    alt="참여인원"
-                    className="w-[1rem] h-[1rem] ml-[-0.12rem]"
-                  />
-                  <span>4</span>
-                </div>
-            </div>
-
-            {/* 카드 2 (복사본) */}
-            <div className="w-[20.4375rem] h-[15rem] ml-[-1rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-5 border border-gray-100 mx-[1.5rem] my-[1rem]">
-              {/* 따옴표 + 문장(오른쪽 따옴표는 마지막 줄 끝) */}
+            {/* 따옴표 + 문장(오른쪽 따옴표는 마지막 줄 끝) */}
               <div className="relative w-full flex items-start justify-center">
 
                 {/* 왼쪽 따옴표 */}
@@ -178,30 +134,150 @@ export default function MainScreen() {
                   />
                 </div>
               </div>
-              <div className="w-full h-[0.0625rem] bg-[#E7EBEF] mt-[2rem]"></div>
-              <div className="flex justify-between items-center mt-[0.5rem]">
-                <div>
-                  <p className="text-[0.625rem] text-[#3B3D40] mt-[-1.44rem]">익명의 닉네임</p>
-                  <p className="text-[0.75rem] font-bold text-gray-700 mt-[0.25rem] line-clamp-1">
-                    이터널 선샤인 (Eternal Sunshine)
-                  </p>
-                </div>
-                <button className="bg-[#FA502E] w-[6.6875rem] h-[2.125rem] ml-[1rem] mt-[1.69rem] rounded-[0.5rem]">
-                  <p className="text-white text-[0.75rem] text-bold">대화 참여하기 </p>
-                </button>
+
+            {/* 구분선 */}
+            <div className="w-full h-[1px] bg-[#E7EBEF] my-4"></div>
+
+            {/* 닉네임 + 영화 제목 */}
+            <div>
+              <p className="text-[0.75rem] text-[#6B7280] mb-1">익명의 닉네임</p>
+              <p className="text-[0.9rem] font-bold text-[#3B3D40]">
+                이터널 선샤인 (Eternal Sunshine of the Spotless M…)
+              </p>
+            </div>
+
+            {/* 참여 인원 + 태그 */}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+
+              {/* 참여 인원 */}
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#F2F4F8] text-[#3B3D40] text-[0.75rem]">
+                <img src="/icons/people.svg" className="w-4 h-4" />
+                1/4
               </div>
-                {/* 참여 인원 */}
-                <div className="flex items-center w-[2.25rem] h-[1.315rem] mt-[-1.19rem] gap-[0.25rem] text-[0.75rem] text-[#6B7280] bg-[#F2F4F8] rounded-[0.25rem] px-[0.4rem] py-[0.2rem]">
-                  <img
-                    src="/icons/people.svg"
-                    alt="참여인원"
-                    className="w-[1rem] h-[1rem] ml-[-0.12rem]"
-                  />
-                  <span>4</span>
-                </div>
+
+              {/* 태그 */}
+              <span className="px-2 py-1 bg-[#FFF2EE] text-[#FA502E] text-[0.75rem] rounded-md">
+                용서
+              </span>
+
+              <span className="px-2 py-1 bg-[#FFF2EE] text-[#FA502E] text-[0.75rem] rounded-md">
+                기억
+              </span>
+            </div>
+
+            {/* 하트 + 참여하기 버튼 */}
+            <div className="flex items-center justify-between mt-[0.5rem]">
+
+              {/* ❤️ 하트 */}
+              <button
+                onClick={() =>
+                  setLikes((prev) => ({ ...prev, card1: !prev.card1 }))
+                }
+                className="flex items-center gap-1"
+              >
+                <img
+                  src={likes.card1 ? "/icons/heart-filled.svg" : "/icons/heart.svg"}
+                  className="w-6 h-6"
+                />
+                <span className="text-[0.9rem] text-[#3B3D40]">
+                  {likes.card1 ? 21 : 20}
+                </span>
+              </button>
+
+              {/* 참여하기 버튼 */}
+              <button className="bg-[#FA502E] px-5 py-2 rounded-[0.5rem]">
+                <p className="text-white text-[0.9rem] font-semibold">참여하기</p>
+              </button>
             </div>
           </div>
-        </div>
+
+
+            {/* 카드 2 (복사본) */}
+            <div className="w-[20.4375rem] h-[20.3875rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-6 mx-[1.5rem] my-[1rem] relative">
+
+            {/* 따옴표 + 문장(오른쪽 따옴표는 마지막 줄 끝) */}
+              <div className="relative w-full flex items-start justify-center">
+
+                {/* 왼쪽 따옴표 */}
+                <img
+                  src="/icons/quote.svg"
+                  alt="quote"
+                  className="w-[1rem] h-[1rem] opacity-70 mt-[0.5rem] flex-shrink-0 mr-2"
+                />
+
+                {/* 문장 + 오른쪽 따옴표 absolute */}
+                <div className="relative max-w-[14rem] text-center mt-[0.5rem] leading-[1.5]">
+                  <p className="text-[1rem] font-medium text-gray-800">
+                    기억을 지운다는 건 고통을 없애기 위함일까,<br />
+                    아니면 다시 사랑하기 위해 자신을 비워내는 행위일까?
+                  </p>
+
+                  {/* 오른쪽 따옴표 → 마지막 줄 끝에 자동 정렬 */}
+                  <img
+                    src="/icons/quote-down.svg"
+                    alt="quote close"
+                    className="w-[1rem] h-[1rem] opacity-70 absolute right-0 bottom-0 translate-y-[20%]"
+                  />
+                </div>
+              </div>
+
+            {/* 구분선 */}
+            <div className="w-full h-[1px] bg-[#E7EBEF] my-4"></div>
+
+            {/* 닉네임 + 영화 제목 */}
+            <div>
+              <p className="text-[0.75rem] text-[#6B7280] mb-1">익명의 닉네임</p>
+              <p className="text-[0.9rem] font-bold text-[#3B3D40]">
+                이터널 선샤인 (Eternal Sunshine of the Spotless M…)
+              </p>
+            </div>
+
+            {/* 참여 인원 + 태그 */}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+
+              {/* 참여 인원 */}
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#F2F4F8] text-[#3B3D40] text-[0.75rem]">
+                <img src="/icons/people.svg" className="w-4 h-4" />
+                1/4
+              </div>
+
+              {/* 태그 */}
+              <span className="px-2 py-1 bg-[#FFF2EE] text-[#FA502E] text-[0.75rem] rounded-md">
+                용서
+              </span>
+
+              <span className="px-2 py-1 bg-[#FFF2EE] text-[#FA502E] text-[0.75rem] rounded-md">
+                기억
+              </span>
+            </div>
+
+            {/* 하트 + 참여하기 버튼 */}
+            <div className="flex items-center justify-between mt-[0.5rem]">
+
+              {/* ❤️ 하트 */}
+              <button
+                onClick={() =>
+                  setLikes((prev) => ({ ...prev, card1: !prev.card1 }))
+                }
+                className="flex items-center gap-1"
+              >
+                <img
+                  src={likes.card1 ? "/icons/heart-filled.svg" : "/icons/heart.svg"}
+                  className="w-6 h-6"
+                />
+                <span className="text-[0.9rem] text-[#3B3D40]">
+                  {likes.card1 ? 21 : 20}
+                </span>
+              </button>
+
+              {/* 참여하기 버튼 */}
+              <button className="bg-[#FA502E] px-5 py-2 rounded-[0.5rem]">
+                <p className="text-white text-[0.9rem] font-semibold">참여하기</p>
+              </button>
+            </div>
+          </div>
+          </div>
+          </div>
 
         {/* 🔸 섹션 2 (그대로 유지) */}
         <div className="w-full px-6 mt-[2rem]">

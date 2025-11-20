@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Navbar from "../../components/main/Navbar";
 import BottomNav from "../../components/main/BottomNav";
 import { useNavigate, useLocation } from "react-router-dom";
-import SearchBar from "../../components/common/SearchBar";
 
 export default function SearchResult() {
   const navigate = useNavigate();
@@ -20,8 +19,12 @@ export default function SearchResult() {
   const [participate, setParticipate] = useState({});
   const [popup, setPopup] = useState(null);
 
-  const [openSort, setOpenSort] = useState(false);
-  const [sortType, setSortType] = useState("인기순");
+    const tabs = [
+    { name: "NOW", path: "/main" },
+    { name: "추천 질문", path: "/main/sug" },
+    { name: "최신 질문", path: "/main/new" },
+    { name: "인기 질문", path: "/main/pop" },
+  ];
 
   const results = [
     {
@@ -76,6 +79,29 @@ export default function SearchResult() {
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
       <Navbar />
 
+              {/* 🔶 탭 메뉴 */}
+        <div className="flex justify-center w-full bg-white gap-x-[2.25rem]">
+          {tabs.map((tab) => {
+            const active = location.pathname === tab.path;
+
+            return (
+              <button
+                key={tab.name}
+                onClick={() => navigate(tab.path)}
+                className={`relative flex flex-col items-center justify-center h-[2.5rem] bg-transparent border-none outline-none pb-2 text-[0.9rem] transition-colors duration-200 ${
+                  active ? "text-black font-medium-bold" : "text-black"
+                }`}
+              >
+                {tab.name}
+
+                {active && (
+                  <span className="absolute mt-[2rem] ml-[0rem] left-0 w-full h-[2px] bg-[#FA502E] rounded-full"></span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
       {/* ------------------------------- */}
       {/* ⭐ 팝업 (사진과 동일한 디자인) */}
       {/* ------------------------------- */}
@@ -119,56 +145,6 @@ export default function SearchResult() {
       {/* 검색창 */}
       {/* ------------------------------- */}
       <div className="flex-1 flex flex-col overflow-hidden w-full max-w-[500px] mx-auto">
-        <SearchBar
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          tags={tags}
-          onRemoveTag={handleRemoveTag}
-        />
-
-
-        {/* 결과 상단 */}
-        <div className="flex justify-between items-center px-[2.5rem] mt-[1.5rem]">
-          <p className="text-[1.1rem] font-semibold">
-            검색결과 {results.length}
-          </p>
-
-          <div className="relative">
-            <button
-              className="text-[#6B7280] text-[0.9rem] flex items-center"
-              onClick={() => setOpenSort(!openSort)}
-            >
-              {sortType}
-              <img src="/icons/arrow-down.svg" className="w-[1rem] h-[1rem] ml-[0.25rem]" />
-            </button>
-
-            {openSort && (
-              <div className="absolute right-0 mt-2 w-[6rem] bg-white rounded-xl shadow-lg z-50">
-                <button
-                  className="w-full text-left px-3 py-2 text-[0.9rem] text-[#B5BBC1]"
-                  onClick={() => { setSortType("가나다순"); setOpenSort(false); }}
-                >
-                  가나다순
-                </button>
-                <button
-                  className="w-full text-left px-3 py-2 text-[0.9rem] text-[#B5BBC1]"
-                  onClick={() => { setSortType("인기순"); setOpenSort(false); }}
-                >
-                  인기순
-                </button>
-                <button
-                  className="w-full text-left px-3 py-2 text-[0.9rem] text-[#B5BBC1]"
-                  onClick={() => { setSortType("최신순"); setOpenSort(false); }}
-                >
-                  최신순
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="w-full h-[0.5rem] bg-[#F2F4F8] mt-[1rem]"></div>
-
         {/* ------------------------------- */}
         {/* 결과 리스트 */}
         {/* ------------------------------- */}

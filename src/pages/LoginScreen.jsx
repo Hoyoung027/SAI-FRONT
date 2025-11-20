@@ -24,7 +24,7 @@ export default function LoginScreen() {
         className="w-[2.5rem] h-[4.5rem] mb-[1.5rem] mt-[7rem]"
       />
 
-      <div className="w-[20.4rem] flex flex-col gap-[1rem]">
+      <div className="w-full flex flex-col gap-[1rem] px-[1.5rem]">
         {/* 입력 폼 */}
         <div className="relative">
           <div className="flex flex-col justify-center border border-[#D0D6DD] rounded-[0.5rem] h-[3.75rem] px-[1rem]">
@@ -86,20 +86,20 @@ export default function LoginScreen() {
       </div>
 
       {/* SNS 로그인 구분선 및 버튼 */}
-      <div className="flex flex-col items-center w-full">
+      <div className="flex flex-col items-center w-full px-[1.5rem]">
         <div className="w-full flex itmes-center justify-center mt-[1.25rem]">
           <img
             src="/icons/line.png"
             alt="line"
             className="w-[6.25rem] h-[0.0625rem]"
           />
-          <div className="text-[0.75rem] text-[#B5BBC1] ml-[1.31rem] mb-[1rem] mt-[-0.5rem]">
+          <div className="text-[0.75rem] text-[#B5BBC1] px-[1.31rem] mb-[1rem] mt-[-0.5rem]">
           SNS 간편 로그인
           </div>
           <img
             src="/icons/line.png"
             alt="line"
-            className="w-[6.25rem] h-[0.0625rem] ml-[1.31rem]"
+            className="w-[6.25rem] h-[0.0625rem]"
           />
         </div>
 

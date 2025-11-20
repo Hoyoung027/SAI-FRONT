@@ -262,7 +262,7 @@ export default function CategorySearchScreen() {
 
             <div className="flex justify-center">
               <button
-                className="w-[20.435rem] h-[3rem] bg-[#FA502E] text-[#FFFFFF] text-[0.875rem] font-medium rounded-[0.5rem] border-none outline-none"
+                className="w-full h-[3rem] mx-[0.5rem] bg-[#FA502E] text-[#FFFFFF] text-[0.875rem] font-medium rounded-[0.5rem] border-none outline-none"
                 onClick={() =>
                   navigate("/search-result", {
                     state: {

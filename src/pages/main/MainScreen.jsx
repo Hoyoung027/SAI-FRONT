@@ -1,5 +1,5 @@
-import Navbar from "../components/main/Navbar.jsx";
-import BottomNav from "../components/main/BottomNav.jsx";
+import Navbar from "../../components/main/Navbar.jsx";
+import BottomNav from "../../components/main/BottomNav.jsx";
 import { useNavigate, useLocation } from "react-router-dom";
 import React, { useState } from "react";
 
@@ -10,16 +10,30 @@ export default function MainScreen() {
   const [likes, setLikes] = useState({
   card1: false,
   });
+  const [participate, setParticipate] = useState({
+      card1: false,
+  });
+  const [popup, setPopup] = useState(null);
   
 
 
   // 🔶 탭 메뉴 데이터
   const tabs = [
     { name: "NOW", path: "/main" },
-    { name: "추천 질문", path: "/" },
-    { name: "최신 질문", path: "/" },
-    { name: "인기 질문", path: "/" },
+    { name: "추천 질문", path: "/main/sug" },
+    { name: "최신 질문", path: "/main/new" },
+    { name: "인기 질문", path: "/main/pop" },
   ];
+
+  const toggleParticipate = (id) => {
+    const now = !participate[id];
+    setParticipate((prev) => ({ ...prev, [id]: now }));
+
+    setPopup(now ? "participate" : "cancel");
+    setTimeout(() => setPopup(null), 2000);
+  };
+
+
 
   return (
     <div className="flex flex-col w-full h-full bg-[#FAFAFA] font-[Pretendard]">
@@ -49,6 +63,42 @@ export default function MainScreen() {
           })}
         </div>
       </div>
+
+      {popup && (
+            <div className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 
+                            w-[100%] max-w-[500px]
+                            p-4 z-[200]
+                            animate-slide-down">
+
+          <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#F2F2F2]">
+            <div className="flex items-start gap-3">
+
+              <img
+                src="/icons/popup-check.svg"
+                className="w-[1.2rem] h-[1.2rem] mt-[0.2rem]"
+                alt=""
+              />
+
+              <div className="flex flex-col">
+                {/* 제목 */}
+                <p className="text-[0.875rem] font-bold text-[#3B3D40] leading-[1.4rem]">
+                  {popup === "participate"
+                    ? "질문 참여가 등록되었습니다"
+                    : "참여가 취소되었어요"}
+                </p>
+
+                {/* 설명 */}
+                <p className="text-[0.75rem] text-[#3B3D40] leading-[1.3rem] mt-[0.25rem] whitespace-pre-line">
+                  {popup === "participate"
+                    ? "대화 인원이 모두 모이면 알려드릴게요.\n알림을 받으면 30초 안에 ‘준비 완료’를 눌러 참여할 수 있습니다."
+                    : "다시 참여하려면 ‘참여하기’를 눌러주세요."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       <div className="flex-1 min-h-0 overflow-y-auto pb-[6rem]">
         <div className="flex flex-col">
@@ -107,22 +157,22 @@ export default function MainScreen() {
         <div className="w-full mt-4 overflow-x-auto overflow-y-visible no-scrollbar relative z-10" style={{ overflowY: "visible" }}>
           <div className="flex gap-4 w-max pr-6">
           {/* 카드 1 */}
-          <div className="w-[20.4375rem] h-[20.3875rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-6 mx-[1.5rem] my-[1rem] relative">
+          <div className="w-[20.4375rem] h-[18.6875rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-6 mx-[1.5rem] my-[1rem] relative">
 
             {/* 따옴표 + 문장(오른쪽 따옴표는 마지막 줄 끝) */}
-              <div className="relative w-full flex items-start justify-center">
+              <div className="relative w-full ml-[-0.2rem] flex items-start justify-center">
 
                 {/* 왼쪽 따옴표 */}
                 <img
                   src="/icons/quote.svg"
                   alt="quote"
-                  className="w-[1rem] h-[1rem] opacity-70 mt-[0.5rem] flex-shrink-0 mr-2"
+                  className="w-[1rem] h-[1rem] opacity-70 mt-[0.5rem] flex-shrink-0 ml-[-0.5rem] mr-2"
                 />
 
                 {/* 문장 + 오른쪽 따옴표 absolute */}
                 <div className="relative max-w-[14rem] text-center mt-[0.5rem] leading-[1.5]">
-                  <p className="text-[1rem] font-medium text-gray-800">
-                    기억을 지운다는 건 고통을 없애기 위함일까,<br />
+                  <p className="text-[1rem] font-medium ml-[-0.1rem] text-gray-800">
+                    기억을 지운다는 건 고통을 없애기 위함일까,
                     아니면 다시 사랑하기 위해 자신을 비워내는 행위일까?
                   </p>
 
@@ -130,7 +180,7 @@ export default function MainScreen() {
                   <img
                     src="/icons/quote-down.svg"
                     alt="quote close"
-                    className="w-[1rem] h-[1rem] opacity-70 absolute right-0 bottom-0 translate-y-[20%]"
+                    className="w-[1rem] h-[1rem] opacity-70 absolute right-0 mr-[-1rem] bottom-0 translate-y-[20%]"
                   />
                 </div>
               </div>
@@ -170,9 +220,7 @@ export default function MainScreen() {
 
               {/* ❤️ 하트 */}
               <button
-                onClick={() =>
-                  setLikes((prev) => ({ ...prev, card1: !prev.card1 }))
-                }
+                onClick={() => setLikes((prev) => ({ ...prev, card1: !prev.card1 }))}
                 className="flex items-center gap-1"
               >
                 <img
@@ -185,30 +233,36 @@ export default function MainScreen() {
               </button>
 
               {/* 참여하기 버튼 */}
-              <button className="bg-[#FA502E] px-5 py-2 rounded-[0.5rem]">
-                <p className="text-white text-[0.9rem] font-semibold">참여하기</p>
+              <button
+                onClick={() => toggleParticipate("card1")}
+                className={`px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium ${
+                  participate.card1 ? "bg-[#B5BBC1] text-white" : "bg-[#FA502E] text-white"
+                }`}
+              >
+                {participate.card1 ? "참여 취소" : "참여하기"}
               </button>
             </div>
+
           </div>
 
 
             {/* 카드 2 (복사본) */}
-            <div className="w-[20.4375rem] h-[20.3875rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-6 mx-[1.5rem] my-[1rem] relative">
+            <div className="w-[20.4375rem] h-[18.6875rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-6 mx-[1.5rem] ml-[-1.5rem] my-[1rem] relative">
 
             {/* 따옴표 + 문장(오른쪽 따옴표는 마지막 줄 끝) */}
-              <div className="relative w-full flex items-start justify-center">
+              <div className="relative w-full ml-[-0.2rem] flex items-start justify-center">
 
                 {/* 왼쪽 따옴표 */}
                 <img
                   src="/icons/quote.svg"
                   alt="quote"
-                  className="w-[1rem] h-[1rem] opacity-70 mt-[0.5rem] flex-shrink-0 mr-2"
+                  className="w-[1rem] h-[1rem] opacity-70 mt-[0.5rem] flex-shrink-0 ml-[-0.5rem] mr-2"
                 />
 
                 {/* 문장 + 오른쪽 따옴표 absolute */}
                 <div className="relative max-w-[14rem] text-center mt-[0.5rem] leading-[1.5]">
-                  <p className="text-[1rem] font-medium text-gray-800">
-                    기억을 지운다는 건 고통을 없애기 위함일까,<br />
+                  <p className="text-[1rem] font-medium ml-[-0.1rem] text-gray-800">
+                    기억을 지운다는 건 고통을 없애기 위함일까,
                     아니면 다시 사랑하기 위해 자신을 비워내는 행위일까?
                   </p>
 
@@ -216,7 +270,7 @@ export default function MainScreen() {
                   <img
                     src="/icons/quote-down.svg"
                     alt="quote close"
-                    className="w-[1rem] h-[1rem] opacity-70 absolute right-0 bottom-0 translate-y-[20%]"
+                    className="w-[1rem] h-[1rem] opacity-70 absolute right-0 mr-[-1rem] bottom-0 translate-y-[20%]"
                   />
                 </div>
               </div>
@@ -256,9 +310,7 @@ export default function MainScreen() {
 
               {/* ❤️ 하트 */}
               <button
-                onClick={() =>
-                  setLikes((prev) => ({ ...prev, card1: !prev.card1 }))
-                }
+                onClick={() => setLikes((prev) => ({ ...prev, card1: !prev.card1 }))}
                 className="flex items-center gap-1"
               >
                 <img
@@ -271,10 +323,16 @@ export default function MainScreen() {
               </button>
 
               {/* 참여하기 버튼 */}
-              <button className="bg-[#FA502E] px-5 py-2 rounded-[0.5rem]">
-                <p className="text-white text-[0.9rem] font-semibold">참여하기</p>
+              <button
+                onClick={() => toggleParticipate("card1")}
+                className={`px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium ${
+                  participate.card1 ? "bg-[#B5BBC1] text-white" : "bg-[#FA502E] text-white"
+                }`}
+              >
+                {participate.card1 ? "참여 취소" : "참여하기"}
               </button>
             </div>
+
           </div>
           </div>
           </div>
@@ -330,7 +388,7 @@ export default function MainScreen() {
                 </div>
 
                 {/* 2번 카드 */}
-                <div className="w-[20.4375rem] h-[17.1875rem] ml-[-0.5rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-5 border border-gray-100 mx-[1.5rem] my-[1rem]">
+                <div className="w-[20.4375rem] h-[17.1875rem] ml-[-1.5rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-5 border border-gray-100 mx-[1.5rem] my-[1rem]">
                   <div className="relative w-full flex items-start">
 
                     <div className="mt-[0.5rem] ml-[0.25rem] leading-[1.5]">

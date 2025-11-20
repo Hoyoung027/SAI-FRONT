@@ -28,7 +28,7 @@ export default function SignupScreen() {
       </div>
 
       {/* 입력 폼 */}
-      <div className="w-[20.4rem] flex flex-col gap-[1rem]">
+      <div className="w-full px-[1.5rem] flex flex-col gap-[1rem]">
 
         {/* 이메일 */}
         <div className="relative">

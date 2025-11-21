@@ -1,10 +1,16 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // useNavigate 임포트
 
 export default function LoginScreen() {
+  const navigate = useNavigate(); // navigate 훅 사용
+
   const [formData, setFormData] = useState({
     user_id: "",
     password: "",
   });
+
+  const [error, setError] = useState(""); // 오류 메시지를 저장할 상태
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -14,10 +20,39 @@ export default function LoginScreen() {
     }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // 로그인 API 요청
+      const response = await axios.post("http://3.36.131.35:8080/api/v1/auth/login", {
+        email: formData.user_id, // 아이디를 이메일로 보내는 형태로 수정
+        password: formData.password,
+      });
+
+      // 응답 데이터에서 accessToken을 로컬 스토리지에 저장
+      localStorage.setItem("accessToken", response.data.accessToken);
+      localStorage.setItem("tokenType", response.data.tokenType);
+      localStorage.setItem("expiresIn", response.data.expiresIn);
+
+      alert("로그인 성공");
+
+      // 로그인 성공 후 메인 화면으로 이동
+      navigate("/main"); // 메인 화면으로 이동
+    } catch (err) {
+      // 오류가 발생하면 에러 메시지 표시
+      if (err.response) {
+        // 서버 응답이 있는 경우
+        setError(err.response.data.message || "로그인 실패");
+      } else {
+        // 서버와의 연결 문제 등
+        setError("서버와의 연결에 문제가 발생했습니다.");
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col items-center w-full h-screen bg-white mx-auto relative font-[Pretendard]">
-
-      {/* 로고 */}
       <img
         src="/icons/logo.svg"
         alt="Logo"
@@ -25,11 +60,11 @@ export default function LoginScreen() {
       />
 
       <div className="w-full flex flex-col gap-[1rem] px-[1.5rem]">
-        {/* 입력 폼 */}
+        {/* 아이디 입력 폼 */}
         <div className="relative">
           <div className="flex flex-col justify-center border border-[#D0D6DD] rounded-[0.5rem] h-[3.75rem] px-[1rem]">
             <label className="text-[0.625rem] text-[#9EA4AA] font-medium mb-[0.2rem]">
-              아이디 
+              아이디
             </label>
             <input
               type="text"
@@ -42,10 +77,11 @@ export default function LoginScreen() {
           </div>
         </div>
 
+        {/* 비밀번호 입력 폼 */}
         <div className="relative">
           <div className="flex flex-col justify-center border border-[#D0D6DD] rounded-[0.5rem] h-[3.75rem] px-[1rem]">
             <label className="text-[0.625rem] text-[#9EA4AA] font-medium mb-[0.2rem]">
-              비밀번호 
+              비밀번호
             </label>
             <input
               type="password"
@@ -60,27 +96,23 @@ export default function LoginScreen() {
 
         {/* 로그인 버튼 */}
         <button
+          onClick={handleSubmit} // 로그인 버튼 클릭 시 handleSubmit 호출
           className="h-[3.25rem] bg-[#FA502E] text-[#FFFFFF] text-[1rem] leading-[2.25rem] rounded-[0.5rem] px-[1rem] py-[0.5rem] mt-[0.5rem] hover:opacity-90 focus:outline-none focus:ring-none border-none"
         >
           로그인
         </button>
+
+        {/* 오류 메시지 */}
+        {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
 
       {/* 하단 링크 */}
       <div className="flex items-center justify-end gap-[0.375rem] mt-[0.5rem] text-[0.875rem] text-gray-500 w-full pr-[2.5rem]">
-        <a
-          href="/signup"
-          className="hover:text-[#FA502E] no-underline"
-          style={{ color: "#B5BBC1" }}
-        >
+        <a href="/signup" className="hover:text-[#FA502E] no-underline">
           회원가입
         </a>
         <span className="text-[#B5BBC1]">|</span>
-        <a
-          href="/find-id-pw"
-          className="hover:text-[#FA502E] no-underline"
-          style={{ color: "#B5BBC1" }}
-        >
+        <a href="/find-id-pw" className="hover:text-[#FA502E] no-underline">
           ID/PW 찾기
         </a>
       </div>
@@ -94,7 +126,7 @@ export default function LoginScreen() {
             className="w-[6.25rem] h-[0.0625rem]"
           />
           <div className="text-[0.75rem] text-[#B5BBC1] px-[1.31rem] mb-[1rem] mt-[-0.5rem]">
-          SNS 간편 로그인
+            SNS 간편 로그인
           </div>
           <img
             src="/icons/line.png"
@@ -102,7 +134,6 @@ export default function LoginScreen() {
             className="w-[6.25rem] h-[0.0625rem]"
           />
         </div>
-
 
         <div className="flex gap-[1.5rem]">
           <img

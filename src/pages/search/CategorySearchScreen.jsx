@@ -1,14 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/main/Navbar";
 import BottomNav from "../../components/main/BottomNav";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../../components/common/SearchBar";
-
+import axios from "axios";
 
 export default function CategorySearchScreen() {
   const [selected, setSelected] = useState([]);
   const [showPopular, setShowPopular] = useState(false);
+  const [popularKeywords, setPopularKeywords] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // 인기 검색어 데이터 받아오기
+    axios.get("http://3.36.131.35:8080/api/v1/search/popular?size=10")
+      .then(response => {
+        setPopularKeywords(response.data);
+      })
+      .catch(error => {
+        console.error("Error fetching popular keywords:", error);
+      });
+  }, []);
 
   const categories = {
     도서: [
@@ -28,20 +40,6 @@ export default function CategorySearchScreen() {
     ],
   };
 
-  const popular = [
-    { title: "사랑의 지속", trend: "up" },
-    { title: "기억과 망각", trend: "same" },
-    { title: "관계의 거리", trend: "down" },
-    { title: "AI와 예술", trend: "up" },
-    { title: "자아와 타인", trend: "up" },
-    { title: "공감의 피로", trend: "down" },
-    { title: "죽음 이후의 의미", trend: "same" },
-    { title: "성장의 책임", trend: "up" },
-    { title: "외로움의 가치", trend: "down" },
-    { title: "선택과 후회", trend: "up" },
-  ];
-
-  // ✅ 3개씩 나누는 함수
   const chunkArray = (arr, size) => {
     const chunks = [];
     for (let i = 0; i < arr.length; i += size) {
@@ -60,7 +58,6 @@ export default function CategorySearchScreen() {
 
   const resetSelection = () => setSelected([]);
 
-  // ✅ SVG 아이콘 적용
   const renderTrendIcon = (trend) => {
     if (trend === "up")
       return <img src="/icons/trend-up.svg" alt="상승" className="w-[0.5rem] h-[0.5rem] ml-[0.44rem]" />;
@@ -74,18 +71,17 @@ export default function CategorySearchScreen() {
       <Navbar />
 
       <div className="flex-1 overflow-hidden flex flex-col">
-        {/* 🔍 검색창 */}
         <SearchBar onFocus={() => navigate("/search")} value="" />
 
-
-        {/* 🔥 인기검색어 */}
         <div className="w-full max-w-[500px] mx-auto pl-[1.5rem] pr-6 mt-[1rem] bg-white relative z-20">
           {!showPopular ? (
             <div className="flex justify-between items-center mb-2">
-              <p className="text-[1rem] font-refular flex items-center">
-                1 {popular[0].title}
-                <img src="/icons/trend-up.svg" alt="상승" className="w-[0.5rem] h-[0.5rem] ml-[0.43rem]" />
-              </p>
+              {popularKeywords.length > 0 && (
+                <p className="text-[1rem] font-refular flex items-center">
+                  1 {popularKeywords[0].keyword}
+                  <img src="/icons/trend-up.svg" alt="상승" className="w-[0.5rem] h-[0.5rem] ml-[0.43rem]" />
+                </p>
+              )}
               <button
                 onClick={() => setShowPopular(true)}
                 className="bg-transparent border-none outline-none"
@@ -118,56 +114,44 @@ export default function CategorySearchScreen() {
                 </button>
               </div>
 
-              {/* ✅ 인기 검색어 두 열로 분리 */}
               <div className="flex gap-[3.5rem] mt-[0rem]">
-                {/* 왼쪽 열 (1,3,5,7,9) */}
                 <div className="flex flex-col gap-[0.75rem]">
-                  {popular.filter((_, i) => i % 2 === 0).map((item, i) => (
+                  {popularKeywords.slice(0, 5).map((item, i) => (
                     <div
                       key={i}
                       className="flex items-center text-[1rem] text-[#000000] leading-[1.5rem]"
-                      onClick={() => toggleSelect(item.title)}
+                      onClick={() => toggleSelect(item.keyword)}
                     >
-                      <span>
-                        {(i * 2) + 1}
-                        <span className="ml-[0.5rem]">{item.title}</span>
-                      </span>
-                      <span>{renderTrendIcon(item.trend)}</span>
+                      <span>{(i + 1)} <span className="ml-[0.5rem]">{item.keyword}</span></span>
+                      <span>{renderTrendIcon(item.movement)}</span>
                     </div>
                   ))}
                 </div>
 
-              {/* 오른쪽 열 (2,4,6,8,10) */}
-              <div className="flex flex-col gap-[0.75rem]">
-                {popular.filter((_, i) => i % 2 === 1).map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center text-[1rem] text-[#000000] leading-[1.5rem]"
-                    onClick={() => toggleSelect(item.title)}
-                  >
-                    <span>
-                      {(i * 2) + 2} 
-                      <span className="ml-[0.5rem]">{item.title}</span>                    </span>
-                    <span>{renderTrendIcon(item.trend)}</span>
-                  </div>
-                ))}
+                <div className="flex flex-col gap-[0.75rem]">
+                  {popularKeywords.slice(5, 10).map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center text-[1rem] text-[#000000] leading-[1.5rem]"
+                      onClick={() => toggleSelect(item.keyword)}
+                    >
+                      <span>{(i + 6)} <span className="ml-[0.5rem]">{item.keyword}</span></span>
+                      <span>{renderTrendIcon(item.movement)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
           )}
         </div>
 
-        {/* 회색 구분선 */}
         <div className="w-full h-[0.5rem] bg-[#F2F4F8] mt-[0.5rem]"></div>
-
-        {/* 카테고리 타이틀 */}
         <div className="w-full max-w-[500px] h-[3.25rem] mx-auto pl-[1.5rem] pr-6 mt-3">
           <h2 className="text-[1.125rem] font-semibold text-[#000000]">
             카테고리
           </h2>
         </div>
         <div className="w-full h-[0.00625rem] mt-[-0.75rem] bg-[#CCD2D8]"></div>
-        {/* ✅ 카테고리 */}
         <div
           className="overflow-y-auto flex-1 w-full max-w-[500px] mx-auto pl-[1.5rem] pr-6 pb-[10rem] scrollbar-hide relative z-0"
           style={{
@@ -197,11 +181,9 @@ export default function CategorySearchScreen() {
                         key={j}
                         onClick={() => toggleSelect(item)}
                         className={`px-[0.5rem] py-[0.25rem] rounded-[0.5rem] inline-flex items-center justify-center text-[0.875rem] border transition-all
-                          ${
-                            isSelected
+                          ${isSelected
                               ? "bg-[#FFF2EE] border-[#FA502E] text-[#FA502E]"
-                              : "bg-[#F2F4F8] border-transparent text-gray-700"
-                          }`}
+                              : "bg-[#F2F4F8] border-transparent text-gray-700"}`}
                       >
                         <span className="truncate">{item}</span>
                         {isSelected && (
@@ -217,7 +199,6 @@ export default function CategorySearchScreen() {
         </div>
       </div>
 
-      {/* ✅ 하단 고정 영역 */}
       {selected.length === 0 ? (
         <BottomNav />
       ) : (
@@ -242,7 +223,7 @@ export default function CategorySearchScreen() {
 
             <div className="flex flex-wrap gap-[0.7rem] mb-3 mt-[1rem] max-h-[4rem] overflow-y-auto"
               style={{
-              maxHeight: "4.5rem",  // 👉 두 줄까지만 height 증가
+              maxHeight: "4.5rem",
               }}>
               {selected.map((item, i) => (
                 <span
@@ -266,8 +247,8 @@ export default function CategorySearchScreen() {
                 onClick={() =>
                   navigate("/search-result", {
                     state: {
-                      tags: selected,   // ⭐ 선택한 카테고 리 전달!
-                      query: selected.join(", "),  // (선택) SearchBar 에 기본 검색어로도 넣고 싶으면
+                      tags: selected,
+                      query: selected.join(", "),
                     },
                   })
                 }

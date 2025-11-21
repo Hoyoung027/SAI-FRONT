@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/main/Navbar";
 import BottomNav from "../../components/main/BottomNav";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -19,35 +19,54 @@ export default function SearchResult() {
   const [likes, setLikes] = useState({});
   const [participate, setParticipate] = useState({});
   const [popup, setPopup] = useState(null);
-
+  const [results, setResults] = useState([]);
   const [openSort, setOpenSort] = useState(false);
   const [sortType, setSortType] = useState("인기순");
 
-  const results = [
-    {
-      id: 1,
-      question:
-        "기억을 지운다는 건 고통을 없애기 위함일까, 아니면 다시 사랑하기 위해 자신을 비워내는 행위일까?",
-      description:
-        "아픈 기억이 사라지면 편해질 것 같지만, 그 기억이 사라지면 지금의 나도 조금 달라질 것 같다는 생각이 들어요.",
-      bookTitle: "이터널 선샤인",
-      categoryPath: "도서 > 소설",
-      category: ["사랑", "기억"],
-      likes: 20,
-      participants: "1/4",
-    },
-    {
-      id: 2,
-      question: "용서란 상대를 위한 걸까, 나를 위한 걸까?",
-      description:
-        "용서는 결국 내 마음의 짐을 덜기 위한 선택일지도 모르겠다는 생각이 들었어요.",
-      bookTitle: "리틀 라이프",
-      categoryPath: "도서 > 소설",
-      category: ["용서", "기억"],
-      likes: 20,
-      participants: "3/5",
-    },
-  ];
+  // 검색 결과를 가져오는 함수 (API 호출)
+  const fetchResults = async () => {
+    const token = localStorage.getItem("access_token"); // 로컬 스토리지에서 토큰 가져오기
+
+    const requestBody = {
+      questionSearchRequestDTO: {
+        keyword: query, // 사용자가 입력한 검색어
+        categories: tags.map(tag => ({
+          main: tag,
+          sub: tag, // 태그를 main과 sub로 같은 값으로 설정
+        })),
+        tags: tags, // 태그
+      },
+      pageable: {
+        page: 0, // 페이지 번호
+        size: 10, // 한 번에 가져올 결과 수
+        sort: ["popularity"], // 정렬 기준
+      },
+    };
+
+    try {
+      const response = await fetch("http://3.36.131.35:8080/api/v1/questions/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // 엑세스 토큰을 Authorization 헤더에 포함
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error("검색 결과를 가져오는 데 실패했습니다.");
+      }
+
+      const data = await response.json();
+      setResults(data.content || []); // 검색 결과 데이터를 상태에 저장
+    } catch (error) {
+      console.error("Error fetching results:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchResults(); // 페이지가 로드될 때 검색 결과를 가져옵니다.
+  }, [query, tags, sortType]);
 
   // ❤️ 하트 토글
   const toggleLike = (id) => {
@@ -80,29 +99,14 @@ export default function SearchResult() {
       {/* ⭐ 팝업 (사진과 동일한 디자인) */}
       {/* ------------------------------- */}
       {popup && (
-            <div className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 
-                            w-[100%] max-w-[500px]
-                            p-4 z-[200]
-                            animate-slide-down">
-
+        <div className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 w-[100%] max-w-[500px] p-4 z-[200] animate-slide-down">
           <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#F2F2F2]">
             <div className="flex items-start gap-3">
-
-              <img
-                src="/icons/popup-check.svg"
-                className="w-[1.2rem] h-[1.2rem] mt-[0.2rem]"
-                alt=""
-              />
-
+              <img src="/icons/popup-check.svg" className="w-[1.2rem] h-[1.2rem] mt-[0.2rem]" alt="" />
               <div className="flex flex-col">
-                {/* 제목 */}
                 <p className="text-[0.875rem] font-bold text-[#3B3D40] leading-[1.4rem]">
-                  {popup === "participate"
-                    ? "질문 참여가 등록되었습니다"
-                    : "참여가 취소되었어요"}
+                  {popup === "participate" ? "질문 참여가 등록되었습니다" : "참여가 취소되었어요"}
                 </p>
-
-                {/* 설명 */}
                 <p className="text-[0.75rem] text-[#3B3D40] leading-[1.3rem] mt-[0.25rem] whitespace-pre-line">
                   {popup === "participate"
                     ? "대화 인원이 모두 모이면 알려드릴게요.\n알림을 받으면 30초 안에 ‘준비 완료’를 눌러 참여할 수 있습니다."
@@ -113,7 +117,6 @@ export default function SearchResult() {
           </div>
         </div>
       )}
-
 
       {/* ------------------------------- */}
       {/* 검색창 */}
@@ -126,12 +129,9 @@ export default function SearchResult() {
           onRemoveTag={handleRemoveTag}
         />
 
-
         {/* 결과 상단 */}
         <div className="flex justify-between items-center px-[2.5rem] mt-[1.5rem]">
-          <p className="text-[1.1rem] font-semibold">
-            검색결과 {results.length}
-          </p>
+          <p className="text-[1.1rem] font-semibold">검색결과 {results.length}</p>
 
           <div className="relative">
             <button
@@ -174,18 +174,13 @@ export default function SearchResult() {
         {/* ------------------------------- */}
         <div className="overflow-y-auto flex-1 px-[2.5rem] mt-[0.5rem] pb-[8rem] scrollbar-hide">
           {results.map((item) => (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               className="pb-[1.25rem] mb-[1.25rem] cursor-pointer"
-              onClick={() => navigate("/detail", {state: {item} })}
+              onClick={() => navigate("/detail", { state: { item } })}
             >
-
               <img src="/icons/quote.svg" className="w-[1rem] h-[1rem] mt-[0.75rem] opacity-70" />
-
-              <p className="text-[1rem] font-medium leading-[1.6rem] mt-[0.5rem]">
-                {item.question}
-              </p>
-
+              <p className="text-[1rem] font-medium leading-[1.6rem] mt-[0.5rem]">{item.question}</p>
               <p
                 className="text-[0.875rem] text-[#91969A] leading-[1.4rem] mt-[0.5rem] line-clamp-2"
                 style={{
@@ -196,14 +191,11 @@ export default function SearchResult() {
               >
                 {item.description}
               </p>
-
               <img src="/icons/line.svg" className="w-full mt-[0.8rem] mb-[0.5rem]" />
-
               <div className="flex items-center gap-[0.5rem]">
                 <img src="/icons/profile-gray.svg" className="w-[1.5rem] h-[1.5rem]" />
                 <span className="text-[#9CA3AF] text-[0.85rem]">익명의 사자</span>
               </div>
-
               <p className="font-semibold text-[0.9rem] mt-[0.4rem]">{item.bookTitle}</p>
               <p className="text-[0.7rem] text-[#555] mt-[0.2rem]">{item.categoryPath}</p>
 
@@ -224,19 +216,15 @@ export default function SearchResult() {
               </div>
 
               <div className="flex justify-between items-center mt-[0.8rem]">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleLike(item.id);
-                    }}
-                    className="flex items-center gap-[0.25rem]"
-                  >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleLike(item.id);
+                  }}
+                  className="flex items-center gap-[0.25rem]"
+                >
                   <img
-                    src={
-                      likes[item.id]
-                        ? "/icons/heart-filled.svg"
-                        : "/icons/heart.svg"
-                    }
+                    src={likes[item.id] ? "/icons/heart-filled.svg" : "/icons/heart.svg"}
                     className="w-[1rem] h-[1rem]"
                   />
                   <span className="text-[0.875rem] text-[#6B7280]">

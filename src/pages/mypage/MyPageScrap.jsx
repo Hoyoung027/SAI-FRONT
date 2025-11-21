@@ -47,19 +47,17 @@ export default function MyPageScrapScreen() {
   return (
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
       {/* 상단 */}
-      <div className="flex items-center px-[1.5rem] mt-[1.5rem]">
+      <div className="flex items-center px-[1.5rem] mt-[1.25rem]">
         <button onClick={() => navigate(-1)}>
-          <img src="/icons/arrow-left.svg" className="w-[0.7rem] h-[1.2rem]" />
+          <img src="/icons/arrow-left.svg" className="w-[0.5369rem] h-[0.9281rem]" />
         </button>
-        <p className="text-[1.4rem] font-bold ml-3">아카이브</p>
+        <p className="text-[1.25rem] font-bold ml-3">아카이브</p>
       </div>
 
       {/* 상단 탭 */}
-      <div className="flex gap-[2rem] px-[1.5rem] mt-[1rem]">
-        <button onClick={() => navigate("/mypage/chats")} className="text-[1.1rem]">
-          대화
-        </button>
-        <button className="text-[1.1rem] font-semibold border-b-2 border-[#FA502E] pb-[0.2rem]">
+      <div className="flex justify-start ml-[1.5rem] gap-[2.25rem] mt-[1.5rem] text-[1.125rem] font-semibold">
+        <button onClick={() => navigate("/mypage/chats")}>대화</button>
+        <button className="font-semibold text-[#FA502E] border-b-2 border-[#FA502E] pb-1">
           스크랩
         </button>
       </div>
@@ -217,7 +215,7 @@ export default function MyPageScrapScreen() {
 
                 {/* 왼쪽 따옴표 */}
                 <img
-                  src="/icons/quote.svg"
+                  src="/icons/quote-pink-down.svg"
                   alt="quote"
                   className="w-[1rem] h-[1rem] opacity-70 mt-[0.5rem] ml-[-1rem] flex-shrink-0 mr-2"
                 />
@@ -230,9 +228,9 @@ export default function MyPageScrapScreen() {
 
                   {/* 오른쪽 따옴표 → 마지막 줄 끝에 자동 정렬 */}
                   <img
-                    src="/icons/quote-down.svg"
+                    src="/icons/quote-pink.svg"
                     alt="quote close"
-                    className="w-[1rem] h-[1rem] opacity-70 absolute right-0 bottom-0 translate-y-[20%]"
+                    className="w-[1rem] h-[1rem] opacity-70 absolute right-[-1.5rem] bottom-0 translate-y-[20%]"
                   />
                 </div>
               </div>

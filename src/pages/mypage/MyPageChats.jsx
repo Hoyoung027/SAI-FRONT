@@ -30,14 +30,14 @@ export default function MyPageChats() {
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
 
       {/* 페이지 타이틀 */}
-      <div className="px-[1.5rem] mt-[1.5rem] flex items-center">
+      <div className="px-[1.5rem] mt-[1.25rem] flex items-center">
         <button
           className="mr-2"
           onClick={() => navigate("/mypage")}
         >
           <img src="/icons/arrow-left.svg" className="w-[0.5369rem] h-[0.9281rem]" alt="뒤로" />
         </button>
-        <p className="text-[1.2rem] font-bold">아카이브</p>
+        <p className="text-[1.25rem] font-bold ml-1">아카이브</p>
       </div>
 
       {/* 상단 탭 */}

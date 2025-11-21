@@ -10,7 +10,7 @@ export default function MyPageScreen() {
 
       {/* 상단 타이틀 */}
       <div className="px-[1.5rem] mt-[1.5rem] flex justify-between items-center">
-        <h1 className="text-[1.5rem] font-bold">마이페이지</h1>
+        <h1 className="text-[1.25rem] font-bold">마이페이지</h1>
         <img
           src="/icons/setting.svg"
           className="w-[1.5rem] h-[1.5rem]"
@@ -178,9 +178,10 @@ export default function MyPageScreen() {
 
       {/* 질문하기 버튼 */}
       <button
-        className="fixed bottom-[5.5rem] right-[1.5rem] w-[7rem] h-[2.75rem] bg-[#FA502E] text-white rounded-[1.5rem] text-[0.875rem] font-medium shadow-md flex items-center justify-center gap-[0.5rem] z-50"
+        className="fixed bottom-[5.5rem] right-[1.5rem] w-[7rem] h-[2.75rem] bg-[#FA502E] text-[#FFFFFF] rounded-[1.5rem] text-[0.875rem] font-medium shadow-md flex items-center justify-center gap-[0.5rem] z-50 border-none outline-none"
+        onClick={() => navigate("/question")}
       >
-        <img src="/icons/question.svg" className="w-[1rem] h-[1rem]" />
+        <img src="/icons/question.svg" alt="질문" className="w-[1rem] h-[1rem]" />
         질문하기
       </button>
 

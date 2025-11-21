@@ -6,26 +6,20 @@ import SearchBar from "../../components/common/SearchBar";
 import axios from "axios";
 
 export default function CategorySearchScreen() {
-  const [selected, setSelected] = useState([]);
-  const [showPopular, setShowPopular] = useState(false);
-  const [popularKeywords, setPopularKeywords] = useState([]);
+  const [selected, setSelected] = useState([]); // 선택된 카테고리 저장
+  const [showPopular, setShowPopular] = useState(false); // 인기 검색어 표시 여부
+  const [popularKeywords, setPopularKeywords] = useState([]); // 인기 검색어 상태
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 토큰을 헤더에 포함시켜 인기 검색어 데이터를 받아오기
-    const token = "eyJzdWIiOiIxIiwicm9sZSI6IlVTRVIiLCJ0eXAiOiJhY2Nlc3MiLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzYzNzAxODQ2LCJleHAiOjE3OTUyMzc4NDYsImF1ZCI6IndlYiIsImlzcyI6Im15LWJhY2tlbmQtYXBpIn0.AzIeDBqcvfDapbj79tEa0q8Ta3RQQDVy-Urtn2qUqbo"; // 제공된 토큰
-
-    axios.get("http://3.36.131.35:8080/api/v1/search/popular", {
-      headers: {
-        "Authorization": `Bearer ${token}`, // Authorization 헤더에 토큰 추가
-      }
-    })
-    .then(response => {
-      setPopularKeywords(response.data);
-    })
-    .catch(error => {
-      console.error("Error fetching popular keywords:", error);
-    });
+    // 토큰 없이 인기 검색어 데이터를 받아오기
+    axios.get("http://3.36.131.35:8080/api/v1/search/popular")
+      .then(response => {
+        setPopularKeywords(response.data); // 인기 검색어 상태 업데이트
+      })
+      .catch(error => {
+        console.error("Error fetching popular keywords:", error);
+      });
   }, []);
 
   const categories = {
@@ -56,13 +50,13 @@ export default function CategorySearchScreen() {
 
   const toggleSelect = (item) => {
     if (selected.includes(item)) {
-      setSelected(selected.filter((v) => v !== item));
+      setSelected(selected.filter((v) => v !== item)); // 선택 취소
     } else if (selected.length < 20) {
-      setSelected([...selected, item]);
+      setSelected([...selected, item]); // 선택
     }
   };
 
-  const resetSelection = () => setSelected([]);
+  const resetSelection = () => setSelected([]); // 선택 초기화
 
   const renderTrendIcon = (trend) => {
     if (trend === "up")
@@ -128,7 +122,7 @@ export default function CategorySearchScreen() {
                       className="flex items-center text-[1rem] text-[#000000] leading-[1.5rem]"
                       onClick={() => toggleSelect(item.keyword)}
                     >
-                      <span>{(i + 1)} <span className="ml-[0.5rem]">{item.keyword}</span></span>
+                      <span>{i + 1} <span className="ml-[0.5rem]">{item.keyword}</span></span>
                       <span>{renderTrendIcon(item.movement)}</span>
                     </div>
                   ))}
@@ -141,7 +135,7 @@ export default function CategorySearchScreen() {
                       className="flex items-center text-[1rem] text-[#000000] leading-[1.5rem]"
                       onClick={() => toggleSelect(item.keyword)}
                     >
-                      <span>{(i + 6)} <span className="ml-[0.5rem]">{item.keyword}</span></span>
+                      <span>{i + 6} <span className="ml-[0.5rem]">{item.keyword}</span></span>
                       <span>{renderTrendIcon(item.movement)}</span>
                     </div>
                   ))}

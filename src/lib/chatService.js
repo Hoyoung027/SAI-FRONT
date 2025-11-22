@@ -1,8 +1,6 @@
-import axios from "./axiosInstance";
+import axiosInstance from "./axiosInstance";
 
-// export async function getChatList(payload) {
-
-// }
-
-
+export async function getChatList() {
   
+  return axiosInstance.get("/api/v1/questions");  
+}

@@ -1,6 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ContentTopBar from "../components/contents/contentTopBar";
 import BottomNav from "../components/main/BottomNav";
 import ChatListTopBar from "../components/chat/ChatListTopBar";
 

@@ -31,10 +31,7 @@ export default function LoginScreen() {
     };
 
     try {
-      // 로그인 API 요청
       const response = await login(payload);
-
-      // 응답 데이터에서 accessToken을 로컬 스토리지에 저장
 
       const authHeader =
         response.headers["authorization"] ||
@@ -42,7 +39,20 @@ export default function LoginScreen() {
         response.headers["access-token"];
 
       if(authHeader) {
-        localStorage.setItem("accessToken", authHeader);
+
+        let token = authHeader;
+        
+        if (typeof token === "string") {
+          const parts = token.split(" "); // ["Bearer", "eyJhbGciOi..."]
+          if (parts.length === 2 && /^Bearer$/i.test(parts[0])) {
+            token = parts[1];
+          }
+        }
+
+        localStorage.setItem("accessToken", token);
+
+        initSocket();
+
       }
 
       navigate("/main");

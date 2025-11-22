@@ -7,7 +7,7 @@ let socket = null;
 
 export function initSocket() {
     
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OGIyZmUyMS1lZDlhLTRhMDctODY4Zi1iOWM2NDEzM2ZhOTAiLCJyb2xlIjoiVVNFUiIsInR5cCI6ImFjY2VzcyIsInRva2VuX3R5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3NjM4MTAyOTcsImV4cCI6MTc5NTM0NjI5NywiYXVkIjoid2ViIiwiaXNzIjoibXktYmFja2VuZC1hcGkifQ.IqcRquANqPend0843pWGqyIglxdEE6JJA5N-wLgimbc"
+    const token = localStorage.getItem("accessToken");
 
     if (socket) {
         socket.disconnect();
@@ -44,6 +44,33 @@ export function getSocket() {
     }
 
     return socket;
+}
+
+export function getChatSocket({id}) {
+
+    const socket = getSocket();
+
+    socket.on("chat message", (data) => {
+        console.log("Received chat message:", data);
+    });
+
+    socket.emit("join room", {"roomId": id});
+
+    socket.emit("chat message", (data) => {
+        console.log("Send chat message:", data);
+    });
+
+    return socket;
+}
+
+export function sendMessage(message) {
+
+    const socket = getSocket();
+
+    console.log("[socket] emit chat message:", message);
+      
+    socket.emit("chat message", message);
+
 }
 
 export function disconnectSocket() {

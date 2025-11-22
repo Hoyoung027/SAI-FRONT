@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ChatTopBar from "../components/chat/ChatTopBar";
 import ChatBubble from "../components/chat/ChatBubble";
 import ChatInput from "../components/chat/ChatInput";
-import { getSocket, disconnectSocket } from "../lib/socket";
+import { getSocket, disconnectSocket, getChatSocket } from "../lib/socket";
 
 // Helpers
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -103,12 +103,6 @@ export default function ChatPage() {
     hasOverflowedRef.current = el.scrollHeight > el.clientHeight + 1;
   };
 
-  useEffect(() => {
-
-    const socket = getSocket();    
-    socketRef.current = socket;         
-
-  }, []);
 
   // 메시지 추가 시 동작 규칙 및 화면 제어 로직
   useLayoutEffect(() => {
@@ -142,8 +136,36 @@ export default function ChatPage() {
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, bookmarked: !m.bookmarked } : m)));
   };
 
+  useEffect(() => {
+
+    const socket = getChatSocket({id:1});    
+    socketRef.current = socket;     
+
+    const handleChatMessage = (data) => {
+      console.log("Received chat message:", data);
+      const { from, message, room } = data;
+
+      const newMsg = {
+        id: uid(),                
+        name: from,
+        text: message,
+        time: nowKo(),
+        side: "left",             
+        room,
+      };
+
+      setMessages((prev) => [...prev, newMsg]);
+    };
+    
+    socket.on("chat message", handleChatMessage);
+
+    return () => {
+      socket.off("chat message", handleChatMessage);
+    };
+  }, []);
 
   const handleSend = (content, s, type) => {
+  
     if (type === "image") {
       setMessages((prev) => [
         ...prev,

@@ -8,9 +8,10 @@ import { popular, recentSearch, deleteRecentSearch, clearAllRecentSearch} from "
 
 export default function SearchScreen() {
   const navigate = useNavigate();
-  const [query, setQuery] = useState(""); // 검색어 상태
-  const [recentSearches, setRecentSearches] = useState([]); // 최근 검색어 상태
-  const [popularSearches, setPopularSearches] = useState([]); // 인기 검색어 상태
+  const [query, setQuery] = useState("");
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [popularSearches, setPopularSearches] = useState([]);
+    const [snapshotAt, setSnapshotAt] = useState("");
   const handleSearch = () => {
     if (!query.trim()) return; // 빈 문자열이면 무시
     navigate("/search-result", { state: { query } });
@@ -19,17 +20,77 @@ export default function SearchScreen() {
   const fetchPopularSearches = async () => {
     try {      
       const list = await popular();
+      if (!list || list.length === 0) {
+      setPopularSearches([
+        {
+          keyword: "spring",
+          count: 10,
+          rank: 1,
+          previousRank: 3,
+          movement: "UP",
+          snapshotAt: "2025-11-22 13:00",
+        },
+        {
+          keyword: "spring",
+          count: 20,
+          rank: 2,
+          previousRank: 1,
+          movement: "DOWN",
+          snapshotAt: "2025-11-22 13:00",
+        },
+
+        {
+          keyword: "spring",
+          count: 30,
+          rank: 3,
+          previousRank: 3,
+          movement: "SAME",
+          snapshotAt: "2025-11-22 13:00",
+        },
+
+        {
+          keyword: "spring",
+          count: 30,
+          rank: 4,
+          previousRank: 3,
+          movement: "NEW",
+          snapshotAt: "2025-11-22 13:00",
+        },
+        
+        {
+          keyword: "spring",
+          count: 30,
+          rank: 5,
+          previousRank: 5,
+          movement: "SAME",
+          snapshotAt: "2025-11-22 13:00",
+        },
+        {
+          keyword: "spring",
+          count: 30,
+          rank: 6,
+          previousRank: 3,
+          movement: "SAME",
+          snapshotAt: "2025-11-22 13:00",
+        },
+        // ...원하는 만큼
+      ]);
+      setSnapshotAt("2025-11-22 13:00");
+      return;
+    }
       setPopularSearches(list); 
     } catch (error) {
       console.error("Error fetching popular searches:", error);
     }
   };
 
-  // API 요청 함수 (최근 검색어)
   const fetchRecentSearches = async () => {
     try {
       const list = await recentSearch();
       setRecentSearches(list);
+      if (list.length > 0) {
+      setSnapshotAt(list[0].snapshotAt);
+      }
     } catch (error) {
       console.error("Error fetching recent searches:", error);
     }
@@ -54,11 +115,37 @@ export default function SearchScreen() {
     }
   };
 
-  // 컴포넌트가 마운트될 때 인기 검색어와 최근 검색어 데이터를 가져옴
   useEffect(() => {
     fetchPopularSearches();
     fetchRecentSearches();
   }, []);
+
+  const renderTrendIcon = (movement) => {
+    if (movement === "UP")
+      return (
+        <img
+          src="/icons/trend-up.svg"
+          alt="상승"
+          className="w-[0.5rem] h-[0.5rem] ml-[0.44rem]"
+        />
+      );
+    if (movement === "DOWN")
+      return (
+        <img
+          src="/icons/trend-down.svg"
+          alt="하락"
+          className="w-[0.5rem] h-[0.5rem] ml-[0.44rem]"
+        />
+      );
+    return (
+      <img
+        src="/icons/trend-same.svg"
+        alt="변동없음"
+        className="w-[0.5rem] h-[0.5rem] ml-[0.44rem]"
+      />
+    );
+  };
+
 
   return (
     <div className="flex flex-col h-screen bg-white font-[Pretendard] relative">
@@ -103,18 +190,53 @@ export default function SearchScreen() {
         {/* 인기 검색어 */}
         <div className="mt-[1.75rem] px-[1.5rem]">
           <div className="flex justify-between items-center mb-[0.5rem]">
-            <p className="text-[1rem] font-bold text-[#000000]">인기 검색어</p>
+            <p className="text-[1rem] font-bold text-[#000000]">인기 검색어
+              <span className="text-[#B5BBC1] text-[0.75rem] font-normal ml-[1rem]">
+                {snapshotAt} 기준
+              </span>
+            </p>
           </div>
 
-          <div className="flex gap-[3.5rem]">
-            {/* 인기 검색어 리스트 */}
-            {popularSearches.map((item, index) => (
-              <div key={index} className="flex items-center text-[1rem]">
-                <span>{index + 1}. {item.keyword}</span>
-                <span className="ml-[0.5rem]">{item.count}</span>
-              </div>
-            ))}
+          <div className="flex gap-[3.5rem] mt-[0rem]">
+            {/* 1~5위 */}
+            <div className="flex flex-col gap-[0.75rem]">
+              {popularSearches.slice(0, 5).map((item, i) => (
+                <div
+                  key={item.keyword + "-left"}
+                  className="flex items-center text-[1rem] text-[#000000] leading-[1.5rem]"
+                  onClick={() => handleClickPopularKeyword(item.keyword)}
+                >
+                  <span>
+                    {i + 1}
+                    <span className="ml-[0.5rem]">{item.keyword}</span>
+                  </span>
+                  <span className="ml-[0.44rem]">
+                    {renderTrendIcon(item.movement)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* 6~10위 */}
+            <div className="flex flex-col gap-[0.75rem]">
+              {popularSearches.slice(5, 10).map((item, i) => (
+                <div
+                  key={item.keyword + "-right"}
+                  className="flex items-center text-[1rem] text-[#000000] leading-[1.5rem]"
+                  onClick={() => handleClickPopularKeyword(item.keyword)}
+                >
+                  <span>
+                    {i + 6}
+                    <span className="ml-[0.5rem]">{item.keyword}</span>
+                  </span>
+                  <span className="ml-[0.44rem]">
+                    {renderTrendIcon(item.movement)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
+
         </div>
       </div>
 

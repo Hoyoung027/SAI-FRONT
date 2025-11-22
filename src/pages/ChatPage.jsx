@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ChatTopBar from "../components/chat/ChatTopBar";
 import ChatBubble from "../components/chat/ChatBubble";
 import ChatInput from "../components/chat/ChatInput";
-import { createSocket } from "../lib/socket";
+import { getSocket, disconnectSocket } from "../lib/socket";
 
 // Helpers
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -13,7 +13,6 @@ const nowKo = () =>
     hour12: true,
   }).format(new Date());
 
-// // apiResponse 예시
 const apiResponse = {
     
     title : "기억 통제로 인간은 더 행복해질까? 어쩌면 더 불행해질지도 몰라",
@@ -74,7 +73,6 @@ const apiResponse = {
 
 export default function ChatPage() {
 
-
   const socketRef = useRef(null);
   
   const [messages, setMessages] = useState(apiResponse.seed);
@@ -106,25 +104,10 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    const socket = createSocket();      // 소켓 생성
-    socketRef.current = socket;         // ref에 보관
 
-    socket.on("connect", () => {
-      console.log("✅ connected", socket.id);
-    });
+    const socket = getSocket();    
+    socketRef.current = socket;         
 
-    socket.on("disconnect", (reason) => {
-      console.log("❌ disconnected", reason);
-    });
-
-    socket.on("connect_error", (err) => {
-      console.error("🚨 connect_error:", err.message, err);
-    });
-
-    // cleanup: 컴포넌트가 언마운트될 때 연결 해제
-    return () => {
-      socket.disconnect();
-    };
   }, []);
 
   // 메시지 추가 시 동작 규칙 및 화면 제어 로직

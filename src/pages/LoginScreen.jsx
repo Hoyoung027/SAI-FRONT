@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // useNavigate 임포트
 import { login } from "../lib/loginService";
+import { initSocket } from "../lib/socket";
 
 export default function LoginScreen() {
   const navigate = useNavigate(); // navigate 훅 사용
@@ -32,6 +33,8 @@ export default function LoginScreen() {
     try {
       // 로그인 API 요청
       const response = await login(payload);
+
+      // 응답 데이터에서 accessToken을 로컬 스토리지에 저장
 
       const authHeader =
         response.headers["authorization"] ||

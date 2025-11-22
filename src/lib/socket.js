@@ -3,17 +3,53 @@ import { io } from "socket.io-client";
 
 const SOCKET_URL = "http://3.36.51.2:3000";
 
-export function createSocket() {
-    
-    // const token = localStorage.getItem("accessToken");
-    const token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJhYTY5ZjVhOC02Y2JlLTRiYTctYTg5NC1kOWEyNTYwMjIyNWMiLCJzdWIiOiI1OGIyZmUyMS1lZDlhLTRhMDctODY4Zi1iOWM2NDEzM2ZhOTAiLCJpYXQiOjE3NjM4MDE3OTksImV4cCI6MTc2MzgwMjY5OSwiaXNzIjoibXktYmFja2VuZC1hcGkiLCJhdWQiOiJ3ZWIiLCJ0eXAiOiJhY2Nlc3MiLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwicm9sZSI6IlVTRVIifQ.8v1nEJ05eDZiSnrLIPdIcNaPmk2LcD8epJQzkqZj6rU"
+let socket = null;
 
-    const socket = io(SOCKET_URL, {
+export function initSocket() {
+    
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OGIyZmUyMS1lZDlhLTRhMDctODY4Zi1iOWM2NDEzM2ZhOTAiLCJyb2xlIjoiVVNFUiIsInR5cCI6ImFjY2VzcyIsInRva2VuX3R5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3NjM4MTAyOTcsImV4cCI6MTc5NTM0NjI5NywiYXVkIjoid2ViIiwiaXNzIjoibXktYmFja2VuZC1hcGkifQ.IqcRquANqPend0843pWGqyIglxdEE6JJA5N-wLgimbc"
+
+    if (socket) {
+        socket.disconnect();
+        socket = null;
+    }
+
+      socket = io(SOCKET_URL, {
         transports: ["websocket"],
         auth: {
             token : `Bearer ${token}`
         }
     });
 
-  return socket;
+
+    socket.on("connect", () => {
+        console.log("[socket] connected:", socket.id);
+    });
+
+    socket.on("disconnect", (reason) => {
+        console.log("[socket] disconnected:", reason);
+    });
+
+    socket.on("connect_error", (err) => {
+        console.error("[socket] connect_error:", err.message);
+    });
+
+    return socket;
+    }
+
+export function getSocket() {
+
+    if (!socket) {
+        socket = initSocket();
+    }
+
+    return socket;
+}
+
+export function disconnectSocket() {
+
+    if (socket) {
+        socket.disconnect();
+        socket = null;
+    }
 }

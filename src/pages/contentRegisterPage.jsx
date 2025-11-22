@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ContentTopBar from "../components/contents/contentTopBar";
 import Dropdown from "../components/contents/dropDown";
 import { createContent } from "../lib/contentService";
@@ -24,6 +25,7 @@ function ReturnLabel({ text, optional = false }) {
 export default function ContentRegisterPage({}) {
   
   // 선택 상태
+  const navigate = useNavigate();
   const [major, setMajor] = useState("");
   const [minor, setMinor] = useState("");
   const [contentsName, setContentsName] = useState("");
@@ -67,11 +69,10 @@ export default function ContentRegisterPage({}) {
 
     try {
       const response = await createContent(payload);
-      console.log("✅ 콘텐츠 등록 성공:", response.data);
-      alert("콘텐츠가 성공적으로 등록되었습니다!");
+      console.log("콘텐츠 등록 성공:", response.data);
+      navigate(-1);
     } catch (e) {
-      console.error("❌ 등록 실패:", e.response?.data || e.message);
-      alert(`등록 실패: ${e.response?.data?.message || e.message}`);
+      console.error("콘텐츠 등록 실패:", e.response?.data || e.message);
     }
   };
 

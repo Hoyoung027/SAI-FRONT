@@ -11,11 +11,18 @@ export default function SearchResult() {
   const location = useLocation();
 
   // 전달받은 값
-  const initialQuery = location.state?.query || "";
-  const initialTags = location.state?.tags || [];
+  const initialQuery = location.state.query ?? "";
+  const initialTags = location.state.tags;
 
+  const [inputQuery, setInputQuery] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
-  const [tags, setTags] = useState(initialTags);
+  const [tags, setTags] = useState(initialTags?? []);
+
+  useEffect(() => {
+    setInputQuery(initialQuery);
+    setQuery(initialQuery);
+    setTags(initialTags ?? []);
+  }, [initialQuery, initialTags]);
 
   // 상태
   const [likeState, setLikeState] = useState({}); // { [questionId]: { liked, count } }
@@ -125,21 +132,24 @@ export default function SearchResult() {
       {/* 검색 영역 */}
       <div className="flex-1 flex flex-col overflow-hidden w-full max-w-[500px] mx-auto">
         <SearchBar
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={inputQuery}
+          onChange={(e) => setInputQuery(e.target.value)}
           tags={tags}
           onRemoveTag={handleRemoveTag}
+          onEnter={() => {
+          setQuery(inputQuery);
+        }}
         />
 
         {/* 결과 상단 */}
         <div className="flex justify-between items-center px-[2.5rem] mt-[1.5rem]">
-          <p className="text-[1.1rem] font-semibold">
+          <p className="text-[1rem] font-semibold">
             검색결과 {results.length}
           </p>
 
-          <div className="relative">
+          <div className="relative text-[0.75rem]">
             <button
-              className="text-[#6B7280] text-[0.9rem] flex items-center"
+              className="text-[#6B7280] text-[0.75rem] flex items-center"
               onClick={() => setOpenSort(!openSort)}
             >
               {sortType}
@@ -152,7 +162,7 @@ export default function SearchResult() {
             {openSort && (
               <div className="absolute right-0 mt-2 w-[6rem] bg-white rounded-xl shadow-lg z-50">
                 <button
-                  className="w-full text-left px-3 py-2 text-[0.9rem] text-[#B5BBC1]"
+                  className="w-full text-left px-3 py-2 text-[0.75rem] text-[#B5BBC1]"
                   onClick={() => {
                     setSortType("가나다순");
                     setOpenSort(false);
@@ -161,7 +171,7 @@ export default function SearchResult() {
                   가나다순
                 </button>
                 <button
-                  className="w-full text-left px-3 py-2 text-[0.9rem] text-[#B5BBC1]"
+                  className="w-full text-left px-3 py-2 text-[0.75rem] text-[#B5BBC1]"
                   onClick={() => {
                     setSortType("인기순");
                     setOpenSort(false);
@@ -170,7 +180,7 @@ export default function SearchResult() {
                   인기순
                 </button>
                 <button
-                  className="w-full text-left px-3 py-2 text-[0.9rem] text-[#B5BBC1]"
+                  className="w-full text-left px-3 py-2 text-[0.75rem] text-[#B5BBC1]"
                   onClick={() => {
                     setSortType("최신순");
                     setOpenSort(false);

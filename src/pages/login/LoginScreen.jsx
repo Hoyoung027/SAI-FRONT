@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { login, kakaoLogin } from "../lib/loginService";
+import { login, kakaoLogin } from "../../lib/loginService";
 
 export default function LoginScreen() {
   

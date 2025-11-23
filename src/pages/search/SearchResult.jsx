@@ -133,13 +133,13 @@ export default function SearchResult() {
 
         {/* 결과 상단 */}
         <div className="flex justify-between items-center px-[2.5rem] mt-[1.5rem]">
-          <p className="text-[1.1rem] font-semibold">
+          <p className="text-[1rem] font-semibold">
             검색결과 {results.length}
           </p>
 
-          <div className="relative">
+          <div className="relative text-[0.75rem]">
             <button
-              className="text-[#6B7280] text-[0.9rem] flex items-center"
+              className="text-[#6B7280] text-[0.75rem] flex items-center"
               onClick={() => setOpenSort(!openSort)}
             >
               {sortType}
@@ -152,7 +152,7 @@ export default function SearchResult() {
             {openSort && (
               <div className="absolute right-0 mt-2 w-[6rem] bg-white rounded-xl shadow-lg z-50">
                 <button
-                  className="w-full text-left px-3 py-2 text-[0.9rem] text-[#B5BBC1]"
+                  className="w-full text-left px-3 py-2 text-[0.75rem] text-[#B5BBC1]"
                   onClick={() => {
                     setSortType("가나다순");
                     setOpenSort(false);
@@ -161,7 +161,7 @@ export default function SearchResult() {
                   가나다순
                 </button>
                 <button
-                  className="w-full text-left px-3 py-2 text-[0.9rem] text-[#B5BBC1]"
+                  className="w-full text-left px-3 py-2 text-[0.75rem] text-[#B5BBC1]"
                   onClick={() => {
                     setSortType("인기순");
                     setOpenSort(false);
@@ -170,7 +170,7 @@ export default function SearchResult() {
                   인기순
                 </button>
                 <button
-                  className="w-full text-left px-3 py-2 text-[0.9rem] text-[#B5BBC1]"
+                  className="w-full text-left px-3 py-2 text-[0.75rem] text-[#B5BBC1]"
                   onClick={() => {
                     setSortType("최신순");
                     setOpenSort(false);

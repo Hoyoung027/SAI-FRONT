@@ -57,12 +57,12 @@ export default function FriendsScreen() {
   return (
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
       {/* 상단바 */}
-      <div className="px-[1.5rem] mt-[1.5rem] flex items-center">
+      <div className="px-[1.5rem] mt-[1.25rem] flex items-center">
         <button className="mr-[0.5rem]" onClick={() => navigate(-1)}>
           <img
             src="/icons/arrow-left.svg"
             alt="뒤로가기"
-            className="w-[1.5rem] h-[1.5rem]"
+            className="w-[0.5369rem] h-[0.9281rem]"
           />
         </button>
         <h1 className="text-[1.25rem] font-bold">친구</h1>
@@ -150,7 +150,7 @@ export default function FriendsScreen() {
             <p className="text-[1rem] font-semibold mb-[0.25rem]">
               친구 신청을 받았어요
             </p>
-            <p className="text-[0.875rem] text-[#6B7280] mb-[1.25rem] leading-[1.4rem]">
+            <p className="text-[0.75rem] text-[#3B3D40] mb-[1.25rem] leading-[1.4rem]">
               친구가 되면 친구목록에 서로가 추가되고, 친구가 질문을 등록할 경우
               알림을 받을 수 있어요.
             </p>
@@ -162,33 +162,33 @@ export default function FriendsScreen() {
               >
                 {/* 이름 + 프로필 */}
                 <div className="flex items-center">
-                  <div className="w-[2.75rem] h-[2.75rem] rounded-full bg-[#E5E7EB] flex items-center justify-center overflow-hidden">
+                  <div className="w-[2.5rem] h-[2.5rem] flex items-center justify-center overflow-hidden">
                     <img
                       src="/icons/profile-avatar.svg"
                       alt="프로필"
                       className="w-[2.5rem] h-[2.5rem]"
                     />
                   </div>
-                  <p className="ml-[0.75rem] text-[1rem] font-medium text-[#111827]">
+                  <p className="ml-[0.75rem] text-[0.875rem] font-medium text-[#111827]">
                     {req.name}
                   </p>
                 </div>
 
                 {/* 메시지 */}
-                <p className="mt-[0.75rem] text-[0.875rem] text-[#374151] leading-[1.6rem]">
+                <p className="mt-[0.25rem] ml-[3.25rem] text-[0.875rem] text-[#191D1F] leading-[1.6rem]">
                   “{req.message}”
                 </p>
 
                 {/* 버튼 영역 */}
-                <div className="flex gap-[0.75rem] mt-[1.25rem]">
+                <div className="flex gap-[0.56rem] mt-[1.25rem]">
                   <button
-                    className="flex-1 h-[2.75rem] rounded-[1.5rem] bg-[#F3F4F6] text-[#4B5563] text-[0.95rem] font-medium"
+                    className="flex-1 h-[1.8125rem] rounded-[1.5rem] bg-[#F3F4F6] text-[#4B5563] text-[0.87rem] font-medium"
                     onClick={() => handleReject(req.id)}
                   >
                     거절
                   </button>
                   <button
-                    className="flex-1 h-[2.75rem] rounded-[1.5rem] bg-[#FA502E] text-white text-[0.95rem] font-medium"
+                    className="flex-1 h-[1.8125rem] rounded-[1.5rem] bg-[#FA502E] text-white text-[0.87rem] font-medium"
                     onClick={() => handleAccept(req.id)}
                   >
                     수락

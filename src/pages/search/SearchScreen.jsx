@@ -20,65 +20,10 @@ export default function SearchScreen() {
   const fetchPopularSearches = async () => {
     try {      
       const list = await popular();
-      if (!list || list.length === 0) {
-      setPopularSearches([
-        {
-          keyword: "spring",
-          count: 10,
-          rank: 1,
-          previousRank: 3,
-          movement: "UP",
-          snapshotAt: "2025-11-22 13:00",
-        },
-        {
-          keyword: "spring",
-          count: 20,
-          rank: 2,
-          previousRank: 1,
-          movement: "DOWN",
-          snapshotAt: "2025-11-22 13:00",
-        },
-
-        {
-          keyword: "spring",
-          count: 30,
-          rank: 3,
-          previousRank: 3,
-          movement: "SAME",
-          snapshotAt: "2025-11-22 13:00",
-        },
-
-        {
-          keyword: "spring",
-          count: 30,
-          rank: 4,
-          previousRank: 3,
-          movement: "NEW",
-          snapshotAt: "2025-11-22 13:00",
-        },
-        
-        {
-          keyword: "spring",
-          count: 30,
-          rank: 5,
-          previousRank: 5,
-          movement: "SAME",
-          snapshotAt: "2025-11-22 13:00",
-        },
-        {
-          keyword: "spring",
-          count: 30,
-          rank: 6,
-          previousRank: 3,
-          movement: "SAME",
-          snapshotAt: "2025-11-22 13:00",
-        },
-        // ...원하는 만큼
-      ]);
-      setSnapshotAt("2025-11-22 13:00");
-      return;
-    }
       setPopularSearches(list); 
+      if (list.length > 0) {
+      setSnapshotAt(list[0].snapshotAt);
+      }
     } catch (error) {
       console.error("Error fetching popular searches:", error);
     }
@@ -88,9 +33,7 @@ export default function SearchScreen() {
     try {
       const list = await recentSearch();
       setRecentSearches(list);
-      if (list.length > 0) {
-      setSnapshotAt(list[0].snapshotAt);
-      }
+      
     } catch (error) {
       console.error("Error fetching recent searches:", error);
     }
@@ -190,10 +133,11 @@ export default function SearchScreen() {
         {/* 인기 검색어 */}
         <div className="mt-[1.75rem] px-[1.5rem]">
           <div className="flex justify-between items-center mb-[0.5rem]">
-            <p className="text-[1rem] font-bold text-[#000000]">인기 검색어
-              <span className="text-[#B5BBC1] text-[0.75rem] font-normal ml-[1rem]">
-                {snapshotAt} 기준
-              </span>
+            <p className="text-[1rem] font-bold text-[#000000]">
+                  인기 검색어{" "}
+                  <span className="text-[#B5BBC1] text-[0.75rem] font-normal ml-[0.25rem]">
+                    {snapshotAt} 기준
+                  </span>
             </p>
           </div>
 

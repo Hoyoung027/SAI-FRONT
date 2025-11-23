@@ -22,22 +22,6 @@ export default function CategorySearchScreen() {
     try {      
       const list = await popular();
       console.log("응답", list);
-
-      if (!list || list.length === 0) {
-      setPopularKeywords([
-        {
-          keyword: "spring",
-          count: 10,
-          rank: 1,
-          previousRank: 3,
-          movement: "UP",
-          snapshotAt: "2025-11-22 13:00",
-        },
-        // ...원하는 만큼
-      ]);
-      setSnapshotAt("2025-11-22 13:00");
-      return;
-    }
     
       setPopularKeywords(list); 
       if (list.length > 0) {

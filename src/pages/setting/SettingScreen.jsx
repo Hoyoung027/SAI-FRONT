@@ -8,7 +8,7 @@ export default function SettingScreen() {
   return (
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
       {/* 상단바 */}
-      <div className="px-[1.5rem] mt-[1.5rem] flex items-center">
+      <div className="px-[1.5rem] mt-[1.25rem] flex items-center">
         <button
           className="mr-[0.5rem]"
           onClick={() => navigate(-1)}
@@ -16,7 +16,7 @@ export default function SettingScreen() {
           <img
             src="/icons/arrow-left.svg"
             alt="뒤로가기"
-            className="w-[1.5rem] h-[1.5rem]"
+            className="w-[0.5369rem] h-[0.9281rem]"
           />
         </button>
         <h1 className="text-[1.25rem] font-bold">설정</h1>

@@ -11,11 +11,13 @@ export default function MyPageScreen() {
       {/* 상단 타이틀 */}
       <div className="px-[1.5rem] mt-[1.5rem] flex justify-between items-center">
         <h1 className="text-[1.25rem] font-bold">마이페이지</h1>
+        <button onClick={() => navigate("/settings")}>
         <img
           src="/icons/setting.svg"
           className="w-[1.5rem] h-[1.5rem]"
           alt="설정"
         />
+        </button>
       </div>
 
       {/* 메인 스크롤 영역 */}

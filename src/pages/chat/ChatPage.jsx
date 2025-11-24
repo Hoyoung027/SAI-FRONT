@@ -1,8 +1,9 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import ChatTopBar from "../../components/chat/ChatTopBar";
 import ChatBubble from "../../components/chat/ChatBubble";
 import ChatInput from "../../components/chat/ChatInput";
-import { getSocket, disconnectSocket, getChatSocket } from "../../lib/socket";
+import { getSocket, sendMessageSocket, joinSocket  } from "../../lib/socket";
 
 // Helpers
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -75,6 +76,7 @@ export default function ChatPage() {
 
   const socketRef = useRef(null);
 
+  const location = useLocation();
   const roomId = location.state?.roomId;   
   const questionId = location.state?.questionId;
   
@@ -141,8 +143,17 @@ export default function ChatPage() {
 
   useEffect(() => {
 
-    const socket = getChatSocket({id:1});    
+    const socket = getSocket();    
     socketRef.current = socket;     
+
+    // 채팅방 참여
+    if (roomId) {
+      joinSocket({ roomId });
+      console.log("[socket] join room:", roomId);
+    } else {
+      console.warn("[socket] roomId가 없어 채팅방 참여가 불가능합니다.");
+    }
+
 
     const handleChatMessage = (data) => {
       
@@ -163,10 +174,6 @@ export default function ChatPage() {
     
     socket.on("chat message", handleChatMessage);
 
-    // return () => {
-    //   socket.off("chat message", handleChatMessage);
-    //   console.log("ChatPage unmounted, socket listeners removed.");
-    // };
   }, []);
 
   const handleSend = (content, s, type) => {

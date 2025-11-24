@@ -132,12 +132,6 @@ export default function ChatListPage() {
         {chatLists[tab].map((item) => (
           <div
             key={item.id}  
-            onClick={()=>navigate("/chat", {
-              state: { 
-                questionId: item.id,
-                roomId: item.roomId 
-              }
-            })}
             className="text-left"
           >
             <div
@@ -213,7 +207,16 @@ export default function ChatListPage() {
 
               {tab === "prepare" && item.status === "ready" && (
                 <div>
-                <button className="flex justify-center items-center h-[2.125rem] bg-[#FA502E] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]">
+                <button 
+                  className="flex justify-center items-center h-[2.125rem] bg-[#FA502E] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
+                  onClick={()=>navigate("/chat", {
+                        state: { 
+                          questionId: item.id,
+                          roomId: item.roomId 
+                        }
+                  })}    
+                >
+                  
                   <span className="text-white text-[0.75rem]">
                     준비
                   </span>
@@ -223,7 +226,15 @@ export default function ChatListPage() {
 
               {tab === "participate" && item.status === "ready" && (
                 <div>
-                <button className="flex justify-center items-center h-[2.125rem] bg-[#FA502E] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]">
+                <button 
+                  className="flex justify-center items-center h-[2.125rem] bg-[#FA502E] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
+                  onClick={()=>navigate("/chat", {
+                        state: { 
+                          questionId: item.id,
+                          roomId: item.roomId 
+                        }
+                  })}     
+                >
                   <span className="text-white text-[0.75rem]">
                     참여
                   </span>

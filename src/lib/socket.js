@@ -45,32 +45,22 @@ export function getSocket() {
     return socket;
 }
 
-export function getChatSocket({id}) {
 
-    const socket = getSocket();
-
-    console.log("[socket] join room:", id);
-
-    socket.emit("join room", {"roomId": id});
-    
-    socket.on("chat message", (data) => {
-        console.log("Received chat message:", data);
-    });
-
-    socket.emit("chat message", (data) => {
-        console.log("Send chat message:", data);
-    });
-
-    return socket;
-}
-
-export function sendMessage(message) {
+export function sendMessageSocket(message) {
 
     const socket = getSocket();
 
     console.log("[socket] emit chat message:", message);
       
     socket.emit("chat message", message);
+
+}
+
+export function joinSocket({roomId}) {
+
+    const socket = getSocket();
+
+    socket.emit("join room", {"roomId": roomId});
 
 }
 

@@ -11,20 +11,21 @@ export default function MyPageChats() {
   const [sortOpen, setSortOpen] = useState(false);
   const [sortType, setSortType] = useState("최신순");
 
-  // ✅ API에서 불러온 리스트
   const [chats, setChats] = useState([]);
+  const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // ======================
-  //   내가 참여한 질문 불러오기
-  // ======================
+
   useEffect(() => {
     const fetchChats = async () => {
       try {
         setLoading(true);
         const data = await getMyChats();
-        // data가 배열이라고 가정
-        setChats(Array.isArray(data) ? data : []);
+        setChats(data || []);
+        setStats((prev) => ({
+          ...prev,
+          chatCount: (data || []).length,
+        }));
       } catch (e) {
         console.error("마이페이지 대화 목록 불러오기 실패:", e);
       } finally {
@@ -35,7 +36,6 @@ export default function MyPageChats() {
     fetchChats();
   }, []);
 
-  // 정렬 타입 바뀔 때 클라이언트 정렬 (필요하면)
   useEffect(() => {
     if (!chats.length) return;
 
@@ -62,7 +62,7 @@ export default function MyPageChats() {
 
   return (
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
-      <MyPageNav />
+      <MyPageNav stats={stats} />
 
       {/* 정렬 드롭다운 */}
       <div className="flex justify-end items-center pr-[1.5rem] mt-[0.5rem]">
@@ -133,7 +133,6 @@ export default function MyPageChats() {
                 navigate(`/mypage/chat/:id`, { state: { item: chat } })
               }
             >
-              {/* 썸네일: 일단 더미 이미지 사용, 나중에 contentImage 내려주면 교체 */}
               <img
                 src={chat.thumbnailUrl || "/icons/sample1.svg"}
                 className="w-[3.1875rem] h-[4.25rem] rounded-lg mr-[1rem] object-cover"
@@ -141,19 +140,16 @@ export default function MyPageChats() {
               />
 
               <div className="flex flex-col">
-                {/* 대분류 / 소분류 */}
                 <p className="text-[0.875rem] text-[#9CA3AF]">
                   {chat.mainCategory && chat.subCategory
                     ? `${chat.mainCategory} / ${chat.subCategory}`
                     : chat.mainCategory || chat.subCategory || "콘텐츠명"}
                 </p>
 
-                {/* 큰 제목 : 콘텐츠명 or 질문 제목 중 하나 선택 */}
                 <p className="text-[1.0rem] font-semibold mt-[0.25rem] line-clamp-1">
                   {chat.contentName || chat.questionTitle}
                 </p>
 
-                {/* 아래 작은 설명 : 함께한 질문/저장한 대화 (필드는 백에서 맞춰서 사용) */}
                 <p className="text-[0.875rem] text-[#6B7280] mt-[0.25rem]">
                   함께한 질문 {chat.joinedQuestionCount ?? 1} | 저장한 대화{" "}
                   {chat.savedChatCount ?? 0}

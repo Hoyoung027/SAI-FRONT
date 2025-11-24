@@ -3,8 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getMyInfo } from "../../lib/memberService";
 import { getFriendCounts } from "../../lib/friendService";
+import { getMyChats } from "../../lib/questionService"; // ★ 방금 만든 함수
 
-export default function MyPageNav({ stats = {} }) {
+export default function MyPageNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -12,14 +13,17 @@ export default function MyPageNav({ stats = {} }) {
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
-  // 질문/대화/저장/스크랩 개수 (없으면 0)
-  const questionCount = stats.questionCount ?? 0;
-  const chatCount = stats.chatCount ?? 0;
-  const saveCount = stats.saveCount ?? 0;
-  const scrapCount = stats.scrapCount ?? 0;
+  // 질문/대화/저장/스크랩 개수
+  const [stats, setStats] = useState({
+    questionCount: 0,
+    chatCount: 0,
+    saveCount: 0,
+    scrapCount: 0,
+  });
 
+  // 프로필 + 친구 수
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProfile = async () => {
       try {
         const me = await getMyInfo();
         setNickname(me.nickname || "닉네임");
@@ -32,15 +36,55 @@ export default function MyPageNav({ stats = {} }) {
       }
     };
 
-    fetchData();
+    fetchProfile();
   }, []);
 
-  // 숫자 + 라벨 + 탭정보를 한 배열로
-  const items = [
-    { label: "질문", value: questionCount, path: "/mypage/ques" },
-    { label: "대화", value: chatCount, path: "/mypage/chats" },
-    { label: "저장", value: saveCount, path: "/mypage/save" },
-    { label: "스크랩", value: scrapCount, path: "/mypage/scrap" },
+  // ✨ 개수 불러오기 (지금은 대화만 실제로 채워 줌)
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // 내가 참여한 대화 리스트
+        const chats = await getMyChats();
+        setStats((prev) => ({
+          ...prev,
+          chatCount: Array.isArray(chats) ? chats.length : 0,
+          // questionCount / saveCount / scrapCount 도
+          // 나중에 API 생기면 여기서 같이 채우면 됨
+        }));
+      } catch (e) {
+        console.error("마이페이지 통계 로드 실패:", e);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  // 탭 + 숫자 매핑
+  const tabs = [
+    {
+      key: "ques",
+      label: "질문",
+      path: "/mypage/ques",
+      value: stats.questionCount,
+    },
+    {
+      key: "chats",
+      label: "대화",
+      path: "/mypage/chats",
+      value: stats.chatCount,
+    },
+    {
+      key: "save",
+      label: "저장",
+      path: "/mypage/save",
+      value: stats.saveCount,
+    },
+    {
+      key: "scrap",
+      label: "스크랩",
+      path: "/mypage/scrap",
+      value: stats.scrapCount,
+    },
   ];
 
   return (
@@ -86,37 +130,33 @@ export default function MyPageNav({ stats = {} }) {
         </div>
       </div>
 
-      {/* 숫자 + 라벨 + 탭 언더라인 (사진처럼 한 줄에) */}
-      <div className="flex justify-start gap-[2.5rem] mt-[1.5rem] px-[2.5rem]">
-        {items.map((item) => {
+      {/* 숫자 + 탭 한 줄에 붙이기 */}
+      <div className="flex justify-around mt-[1.75rem] px-[1.5rem] text-center">
+        {tabs.map((tab) => {
           const isActive =
-            location.pathname === item.path ||
-            location.pathname.startsWith(item.path + "/");
+            location.pathname === tab.path ||
+            location.pathname.startsWith(tab.path + "/");
 
           return (
             <button
-              key={item.label}
-              onClick={() => navigate(item.path)}
-              className="flex flex-col items-center bg-transparent border-none outline-none"
+              key={tab.key}
+              onClick={() => navigate(tab.path)}
+              className="flex flex-col items-center flex-1 bg-transparent border-none outline-none"
             >
               {/* 숫자 */}
-              <span className="text-[1rem] font-bold">{item.value}</span>
-
+              <span className="text-[1rem] font-bold">{tab.value}</span>
               {/* 라벨 */}
               <span
-                className={`mt-[0.2rem] text-[0.75rem] ${
-                  isActive ? "text-black font-semibold" : "text-[#6B7280]"
+                className={`mt-[0.15rem] text-[0.85rem] ${
+                  isActive ? "text-[#111827]" : "text-[#6B7280]"
                 }`}
               >
-                {item.label}
+                {tab.label}
               </span>
-
               {/* 언더라인 */}
-              <span
-                className={`mt-[0.5rem] w-[2.5rem] h-[2px] rounded-full ${
-                  isActive ? "bg-[#FA502E]" : "bg-transparent"
-                }`}
-              />
+              {isActive && (
+                <span className="mt-[0.25rem] w-[2rem] h-[2px] bg-[#FA502E] rounded-full" />
+              )}
             </button>
           );
         })}

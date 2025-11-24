@@ -56,10 +56,15 @@ export async function getQuestionDetail(questionId) {
 
 export async function participateQuestion(questionId) {
   const res = await axiosInstance.post(
-    `/api/v1/questions/${questionId}`,
+    `/api/v1/questions/participate/${questionId}`,
     null,
     getAuthConfig()
   );
+  return res.data;
+}
+
+export async function cancelParticipateQuestion(questionId) {
+  const res = await axiosInstance.delete(`/api/v1/questions/cancel/${questionId}`);
   return res.data;
 }
 

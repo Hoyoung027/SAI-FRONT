@@ -152,7 +152,7 @@ export default function ChatListPage() {
     };
   }, [tab]);
 
-  handleReadyCancelClick = async (tab, item) => {
+  const handleReadyCancelClick = async (tab, item) => {
     try {
       
       await quitChat(item.questionId);
@@ -175,7 +175,7 @@ export default function ChatListPage() {
     }
   };
 
-  handleParticipateClick = async (tab, item) => {
+  const handleParticipateClick = async (tab, item) => {
     try {
       
       await participateQuestion(item.questionId); 
@@ -190,7 +190,7 @@ export default function ChatListPage() {
     }
   };
 
-  handleReadyClick = async (tab, item) => {
+  const handleReadyClick = async (tab, item) => {
     try {
       
       await readyChat(item.questionId);   

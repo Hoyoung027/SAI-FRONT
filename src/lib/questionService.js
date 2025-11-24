@@ -62,3 +62,8 @@ export async function participateQuestion(questionId) {
   );
   return res.data;
 }
+
+export async function getMyChats() {
+  const res = await axiosInstance.get("/api/v1/questions", getAuthConfig());
+  return res.data;
+}

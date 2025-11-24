@@ -1,4 +1,4 @@
-import axios from "./axiosInstance";
+import axiosInstance from "./axiosInstance";
 
 export const createQuestion = async (payload) => {
 
@@ -14,7 +14,7 @@ export const createQuestion = async (payload) => {
   
   console.log("Request Body:", body); 
 
-  return axios.post("api/v1/questions", body);
+  return axiosInstance.post("api/v1/questions", body);
 };
 
 function getAuthConfig() {

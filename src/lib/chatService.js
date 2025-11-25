@@ -20,6 +20,13 @@ export async function getTimeChat(questionId) {
 }
 
 export async function getFinishChat(roomId) {
-  // return axiosInstance.get(`/api/v1/rooms/${roomId}/messages`);  
   return axiosInstance.get(`/api/v1/messages/${roomId}`);  
+}
+
+export async function scrapMessage(messageId) {
+  return axiosInstance.post(`/api/v1/messages/${messageId}/scrap`);  
+}
+
+export async function unscrapMessage(messageId) {
+  return axiosInstance.delete(`/api/v1/messages/${messageId}/scrap`);  
 }

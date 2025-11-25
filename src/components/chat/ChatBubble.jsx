@@ -15,35 +15,43 @@ function Avatar({ initials = "" }) {
 
 export default function ChatBubble({ msg, onToggleBookmark, onImageClick, onFileClick }) {
  
-  const isLeft = msg.side === "left";
-  const type = msg.type || "text";
   
+  const messageId = msg.messageId;
+  const content = msg.content;
+  const senderNickname = msg.senderNickname;
   const isMine = msg.isMine;
+  const type = msg.type || "text";
+  const time = msg.time || "오후 4:20";
+  const imageUrl = msg.imageUrl || null;
+  const images = msg.images || [];
+  const files = msg.files || [];
+  const bookmarked = msg.bookmarked || false;
+  const imageColor = msg.imageColor || "bg-orange-400";
 
   return (
     
-    <div className={`w-full flex pl-[0.625rem] pr-[0.625rem] pt-[0.5rem] pb-[0.5rem] ${isMine ? "justify-start" : "justify-end"}`}>
+    <div className={`w-full flex pl-[0.625rem] pr-[0.625rem] pt-[0.5rem] pb-[0.5rem] ${!isMine ? "justify-start" : "justify-end"}`}>
 
 
-      {isLeft && (
+      {!isMine && (
         <div className="flex flex-col items-center">
-          <Avatar initials={msg.name?.slice(0, 1)} bg={msg.avatarBg} />
+          <Avatar initials={senderNickname?.slice(0, 1)} bg={imageColor} />
         </div>
       )}
 
-      {/* 내 대화 북마크 */}
-      {!isLeft && type === "text" && (
-        <div className="self-end mb-[1rem] mr-[0.5rem]">
+      {/* 상대 대화 북마크 */}
+      {isMine && type === "text" && (
+        <div className="self-end mb-[1rem]">
           <button
-            onClick={() => onToggleBookmark?.(msg.id)}
+            onClick={() => onToggleBookmark?.(messageId)}
             className={`border-none bg-[#FFFFFF] ${
-              msg.bookmarked ? "text-[#FA502E]" : "text-[#DEE2E6]"
+              bookmarked ? "text-[#FA502E]" : "text-[#DEE2E6]"
             }`}
             aria-label="bookmark"
             title="북마크"
-            aria-pressed={!!msg.bookmarked}
+            aria-pressed={!!bookmarked}
           >
-            <BookmarkIcon filled={msg.bookmarked} />
+            <BookmarkIcon filled={bookmarked} />
           </button>
         </div>
       )}
@@ -52,10 +60,10 @@ export default function ChatBubble({ msg, onToggleBookmark, onImageClick, onFile
         
         {/* nickname */}
         <div className="items-start pl-[0.5rem]">
-          {isLeft && (
+          {!isMine && (
             <div className="border-none">
               <span className="text-[0.875rem] text-[#191D1F]">
-                {msg.name}
+                {senderNickname}
               </span>
             </div>
           )}
@@ -63,37 +71,37 @@ export default function ChatBubble({ msg, onToggleBookmark, onImageClick, onFile
         
         <div className="w-full flex items-end">
           {/* message bubble */}
-          <div className={`${isLeft ? "pl-[0.5rem]" : "pr-[0.5rem]"}`}>
+          <div className={`${isMine ? "pl-[0.5rem]" : "pr-[0.5rem]"}`}>
 
 
               {/* 텍스트 메시지 */}
               {type === "text" && (
                 <div
                   className={`relative max-w-[15rem] rounded-[1rem] pl-[1.25rem] pr-[1.25rem] pt-[0.875rem] pb-[0.875rem] 
-                              ${isLeft ? "border border-[#DEE2E6] bg-[#FFFFFF]" : "bg-[#FA502E]"}`}
+                              ${isMine ? "border border-[#DEE2E6] bg-[#FFFFFF]" : "bg-[#FA502E]"}`}
                 >
                 <span
                   className={`text-[0.875rem] ${
-                    isLeft ? "text-[#191D1F]" : "text-[#FFFFFF]"
+                    isMine ? "text-[#191D1F]" : "text-[#FFFFFF]"
                   }`}
                 >
-                  {msg.text}
+                  {content}
                 </span>
               </div>
               )}
               
 
               {/* 이미지 메시지 */}
-              {type === "image" && msg.images && (
+              {type === "image" && images && (
                 <div
                   className={`relative max-w-[15rem] rounded-[1rem] pl-[1.25rem] pr-[1.25rem] pt-[0.875rem] pb-[0.875rem]`}
                 >
                   <div
                     className={`grid ${
-                      msg.images.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                      images.length === 1 ? "grid-cols-1" : "grid-cols-2"
                     } gap-[0.5rem]`}
                   >
-                    {msg.images.map((src, idx) => (
+                    {images.map((src, idx) => (
                       <img
                         key={idx}
                         src={src}
@@ -106,12 +114,12 @@ export default function ChatBubble({ msg, onToggleBookmark, onImageClick, onFile
               </div>
               )}
 
-              {type === "file" && msg.files && (
+              {type === "file" && files && (
                   <div
                     className="relative max-w-[15rem] rounded-[1rem] pl-[1.25rem] pr-[1.25rem] pt-[0.875rem] pb-[0.875rem]"
                   >
                     <div className="flex flex-col gap-[0.5rem]">
-                      {msg.files.map((file, idx) => {
+                      {files.map((file, idx) => {
                         const sizeKB =
                           typeof file?.size === "number"
                             ? `${(file.size / 1024).toFixed(1)} KB`
@@ -151,31 +159,31 @@ export default function ChatBubble({ msg, onToggleBookmark, onImageClick, onFile
           </div>
         </div>
 
-        {isLeft && (
+        {!isMine && (
           <div className="pl-[0.5rem] text-[0.625rem] text-[#B5BBC1]">
-            {msg.time}
+            {time}
           </div>
         )}
-        {!isLeft && (
+        {isMine && (
           <div className="flex justify-end pr-[0.5rem] text-[0.625rem] text-[#B5BBC1]">
-            {msg.time}
+            {time}
           </div>
         )}
       </div>
 
-      {/* 상대 대화 북마크 */}
-      {isLeft && type === "text" && (
-        <div className="self-end mb-[1rem] ml-[0.5rem]">
+      {/*상대 대화 북마크 */}
+      {!isMine && type === "text" && (
+        <div className="self-end mb-[1rem] ml-[0.1rem]">
           <button
-            onClick={() => onToggleBookmark?.(msg.id)}
+            onClick={() => onToggleBookmark?.(messageId)}
             className={`border-none bg-[#FFFFFF] ${
-              msg.bookmarked ? "text-[#FA502E]" : "text-[#DEE2E6]"
+              bookmarked ? "text-[#FA502E]" : "text-[#DEE2E6]"
             }`}
             aria-label="bookmark"
             title="북마크"
-            aria-pressed={!!msg.bookmarked}
+            aria-pressed={!!bookmarked}
           >
-            <BookmarkIcon filled={msg.bookmarked} />
+            <BookmarkIcon filled={bookmarked} />
           </button>
         </div>
       )}

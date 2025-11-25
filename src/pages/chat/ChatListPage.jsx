@@ -6,83 +6,24 @@ import ChatListTopBar from "../../components/chat/ChatListTopBar";
 import { readyChat, quitChat } from "../../lib/chatService";
 import { participateQuestion } from "../../lib/questionService";
 
-const API_RESPONSES = {
-  ready: [
-    {
-      id: 0,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 3,
-      maxParticipant: 4,
-      status: "participate",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 1,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 2,
-      maxParticipant: 4,
-      status: "cancelled",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    }
-  ],
+function formatCreatedAtToDate(createdAt) {
+  if (!createdAt) return "";
 
-  participate: [
-    {
-      id: 0,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 2,
-      maxParticipant: 4,
-      status: "participate",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 1,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 3,
-      maxParticipant: 4,
-      status: "cancelled",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 2,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 4,
-      maxParticipant: 4,
-      status: "participate",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-  ],
+  const parts = createdAt.split(" ");
+  const datePart = parts[0];
+  if (!datePart) return "";
 
-  finish: [
-    {
-      id: 0,
-      title: "기술이 인간의 감정과 어떻게 연결될까?",
-      question:
-        "좋든 기억이든 나쁜 기억이든 다 내 일부니까, 고통도 성장의 근원이 될 수 있지 않을까?",
-      participant: 4,
-      date: "25.10.09",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 1,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      question:
-        "좋든 기억이든 나쁜 기억이든 다 내 일부니까, 고통도 성장의 근원이 될 수 있지 않을까?",
-      participant: 8,
-      date: "25.10.09",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 2,
-      title: "기억 통제로 인간은 더 행복해질까? 아니면 오히려 이것이 불행의 시작이 될까?",
-      question:
-        "좋든 기억이든 나쁜 기억이든 다 내 일부니까, 고통도 성장의 근원이 될 수 있지 않을까?",
-      participant: 5,
-      date: "25.10.09",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-  ],
-};
+  const datePieces = datePart.split("-");
+  const year = datePieces[0];
+  const month = datePieces[1];
+  const day = datePieces[2];
+
+  if (!year || !month || !day) return "";
+
+  const shortYear = year.slice(2);
+
+  return shortYear + "." + month + "." + day;
+}
 
 export default function ChatListPage() {
   
@@ -90,6 +31,8 @@ export default function ChatListPage() {
   const [chatLists, setChatLists] = useState([]);  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  
 
   const navigate = useNavigate();
 
@@ -108,11 +51,12 @@ export default function ChatListPage() {
         
         const mapped  = response.data.map((q) => ({
           questionId: q.questionId,
+          description: q.questionDescription,
           roomId: q.roomId,                 
           title: q.questionTitle,           
-          participant: q.currentParticipant || 2,
-          maxParticipant: q.maxParticipant || 4, 
-          date: q.createdAt || "02.07" ,
+          participant: q.currentParticipants,
+          maxParticipant: q.maxParticipants, 
+          date: formatCreatedAtToDate(q.createdAt) || "02.07" ,
           status:
             tab === "ready"
               ? "unready" 
@@ -156,6 +100,7 @@ export default function ChatListPage() {
       state: {
         questionId: item.questionId,
         roomId: item.roomId,
+        questionTitle: item.title,
         status: "finished",
       },
     });
@@ -235,6 +180,7 @@ export default function ChatListPage() {
       state: { 
         questionId: item.questionId,  
         roomId: item.roomId,
+        questionTitle: item.title,
         status: "active"
       }
     })
@@ -288,7 +234,7 @@ export default function ChatListPage() {
                   className="w-[3.1875rem] h-[4.25rem] rounded-[0.5rem] object-cover border-none"
                 />
 
-                <div className="flex flex-col flex-1 gap-[0.1875rem]">
+                <div className="flex flex-col flex-1 gap-[0.05rem]">
                   <p 
                     className={`
                       text-[0.625rem]
@@ -335,6 +281,12 @@ export default function ChatListPage() {
                   {tab === "finish" && (
                     <p className="text-[0.75rem] text-[#B5BBC1] line-clamp-1">
                       {item.question}
+                    </p>
+                  )}
+
+                  {tab === "finish" && (
+                    <p className="text-[0.75rem] text-[#B5BBC1] line-clamp-1">
+                      {item.description}
                     </p>
                   )}
                 </div>

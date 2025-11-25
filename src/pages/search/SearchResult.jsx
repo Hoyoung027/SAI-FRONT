@@ -36,6 +36,23 @@ export default function SearchResult() {
   const [openSort, setOpenSort] = useState(false);
   const [sortType, setSortType] = useState("인기순");
 
+  useEffect(() => {
+  const fetchMyJoined = async () => {
+    try {
+      const joinedList = await searchQuestions();
+      const map = {};
+      joinedList.forEach((q) => {
+        map[q.questionId] = true;
+      });
+      setParticipate(map);
+    } catch (e) {
+      console.error("내가 참여한 질문 목록 불러오기 실패", e);
+    }
+  };
+
+  fetchMyJoined();
+}, []);
+
   const fetchResults = async () => {
     try {
       if (!query && tags.length === 0) {

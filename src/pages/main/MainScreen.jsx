@@ -53,6 +53,38 @@ export default function MainScreen() {
     return `${diffDays}일 전`;
   };
 
+  // ✅ 질문 상태 라벨 (참여 가능 / 진행중 / 종료)
+  const getStatusLabel = (status, current, max) => {
+    if (!status) return null;
+
+    switch (status) {
+      case "RECRUITING":
+        // 인원 다 찼으면 진행중으로 처리
+        if (max && current >= max) return "진행중";
+        return "참여 가능";
+      case "PROGRESS":
+      case "IN_PROGRESS":
+        return "진행중";
+      case "COMPLETED":
+      case "DONE":
+        return "종료";
+      default:
+        return null;
+    }
+  };
+
+  // 상태 뱃지 색
+  const getStatusChipClass = (label) => {
+    if (label === "진행중") {
+      return "bg-[#F3FFE1] text-[#6BB600]";
+    }
+    if (label === "종료") {
+      return "bg-[#F3F4F6] text-[#4B5563]";
+    }
+    // 참여 가능
+    return "bg-[#E3F2FF] text-[#1D72FF]";
+  };
+
   useEffect(() => {
     const fetchPopular = async () => {
       setLoading((prev) => ({ ...prev, popular: true }));
@@ -91,9 +123,7 @@ export default function MainScreen() {
         );
 
         // ✅ 좋아요 수 기준으로 정렬해서 상위 3개만
-        listWithLike.sort(
-          (a, b) => (b.likeCount || 0) - (a.likeCount || 0)
-        );
+        listWithLike.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
         const top3 = listWithLike.slice(0, 3);
 
         setPopularQuestions(top3);
@@ -251,105 +281,139 @@ export default function MainScreen() {
     }
   };
 
-  const renderQuestionCard = (item) => (
-    <div
-      key={item.questionId}
-      className="w-[20.4375rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-6 my-[1rem] relative flex flex-col"
-      onClick={() =>
-        navigate("/detail", { state: { questionId: item.questionId, item } })
-      }
-    >
-      <div className="flex-1">
-        {/* 따옴표 + 문장 */}
-        <div className="relative w-full ml-[-0.2rem] mt-[1.5rem] flex items-start justify-center">
-          <img
-            src="/icons/quote.svg"
-            alt="quote"
-            className="w-[1rem] h-[1rem] opacity-70 mt-[0.5rem] flex-shrink-0 ml-[-1rem] mr-2"
-          />
+  const renderQuestionCard = (item) => {
+    const statusLabel = getStatusLabel(
+      item.questionStatus,
+      item.currentParticipants,
+      item.maxParticipants
+    );
+    const isJoinable = statusLabel === "참여 가능";
+    const isParticipating = !!participate[item.questionId];
 
-          <div className="relative max-w-[14rem] text-center mt-[0.5rem] leading-[1.5]">
-            <p className="text-[1rem] font-medium ml-[0.5rem] text-gray-800 line-clamp-3">
-              {item.questionTitle}
-            </p>
-
+    return (
+      <div
+        key={item.questionId}
+        className="w-[20.4375rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-6 my-[1rem] relative flex flex-col"
+        onClick={() =>
+          navigate("/detail", { state: { questionId: item.questionId, item } })
+        }
+      >
+        <div className="flex-1">
+          {/* 따옴표 + 문장 */}
+          <div className="relative w-full ml-[-0.2rem] mt-[1.5rem] flex items-start justify-center">
             <img
-              src="/icons/quote-down.svg"
-              alt="quote close"
-              className="w-[1rem] h-[1rem] mr-[-2rem] opacity-70 absolute right-0 bottom-0 translate-y-[20%]"
+              src="/icons/quote.svg"
+              alt="quote"
+              className="w-[1rem] h-[1rem] opacity-70 mt-[0.5rem] flex-shrink-0 ml-[-1rem] mr-2"
             />
+
+            <div className="relative max-w-[14rem] text-center mt-[0.5rem] leading-[1.5]">
+              <p className="text-[1rem] font-medium ml-[0.5rem] text-gray-800 line-clamp-3">
+                {item.questionTitle}
+              </p>
+
+              <img
+                src="/icons/quote-down.svg"
+                alt="quote close"
+                className="w-[1rem] h-[1rem] mr-[-2rem] opacity-70 absolute right-0 bottom-0 translate-y-[20%]"
+              />
+            </div>
+          </div>
+
+          {/* 구분선 */}
+          <div className="w-full mt-[2.5rem] h-[1px] bg-[#E7EBEF] my-4" />
+
+          {/* 닉네임 + 콘텐츠 제목 */}
+          <div>
+            <p className="text-[0.75rem] text-[#6B7280] mb-1">
+              {item.hostNickname || "익명의 닉네임"}
+            </p>
+            <p className="text-[0.9rem] font-bold text-[#3B3D40] line-clamp-1">
+              {item.contentName}
+            </p>
+          </div>
+
+          {/* 참여 인원 + 상태 + 태그 */}
+          <div className="flex flex-wrap gap-[0.5rem] items-center mt-3">
+            <div className="flex items-center gap-[0.12rem] px-2 py-1 rounded-md bg-[#F2F4F8] text-[#3B3D40] text-[0.75rem]">
+              <img src="/icons/people.svg" className="w-4 h-4" />
+              {` ${item.currentParticipants ?? 0}/${item.maxParticipants}`}
+            </div>
+
+            {statusLabel && (
+              <span
+                className={`px-2 py-1 text-[0.75rem] rounded-md ${getStatusChipClass(
+                  statusLabel
+                )}`}
+              >
+                {statusLabel}
+              </span>
+            )}
+
+            {(item.tagNames || []).map((tag, idx) => (
+              <span
+                key={idx}
+                className="px-2 py-1 bg-[#FFF2EE] text-[#FA502E] text-[0.75rem] rounded-md"
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* 구분선 */}
-        <div className="w-full mt-[2.5rem] h-[1px] bg-[#E7EBEF] my-4" />
-
-        {/* 닉네임 + 콘텐츠 제목 */}
-        <div>
-          <p className="text-[0.75rem] text-[#6B7280] mb-1">
-            {item.hostNickname || "익명의 닉네임"}
-          </p>
-          <p className="text-[0.9rem] font-bold text-[#3B3D40] line-clamp-1">
-            {item.contentName}
-          </p>
-        </div>
-
-        {/* 참여 인원 + 태그 */}
-        <div className="flex flex-wrap gap-[0.5rem] items-center mt-3">
-          <div className="flex items-center gap-[0.12rem] px-2 py-1 rounded-md bg-[#F2F4F8] text-[#3B3D40] text-[0.75rem]">
-            <img src="/icons/people.svg" className="w-4 h-4" />
-            {` ${item.currentParticipants ?? 0}/${item.maxParticipants}`}
-          </div>
-
-          {(item.tagNames || []).map((tag, idx) => (
-            <span
-              key={idx}
-              className="px-2 py-1 bg-[#FFF2EE] text-[#FA502E] text-[0.75rem] rounded-md"
-            >
-              {tag}
+        {/* 하트 + 참여/대화 버튼 */}
+        <div className="flex items-center justify-between mt-[1rem]">
+          {/* ❤️ 하트 */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleLike(item.questionId);
+            }}
+            className="flex items-center gap-1"
+          >
+            <img
+              src={
+                item.likedByMe ? "/icons/heart-filled.svg" : "/icons/heart.svg"
+              }
+              className="w-6 h-6"
+            />
+            <span className="text-[0.9rem] text-[#3B3D40]">
+              {item.likeCount ?? 0}
             </span>
-          ))}
+          </button>
+
+          {/* 상태에 따라 버튼 변경 */}
+          {isJoinable ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleParticipate(item.questionId);
+              }}
+              className={`px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium ${
+                isParticipating
+                  ? "bg-[#B5BBC1] text-white"
+                  : "bg-[#FA502E] text-white"
+              }`}
+            >
+              {isParticipating ? "참여 취소" : "참여하기"}
+            </button>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/detail", {
+                  state: { questionId: item.questionId, item },
+                });
+              }}
+              className="px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
+            >
+              대화 보기
+            </button>
+          )}
         </div>
       </div>
-
-      {/* 하트 + 참여하기 버튼 */}
-      <div className="flex items-center justify-between mt-[1rem]">
-        {/* ❤️ 하트 */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleLike(item.questionId);
-          }}
-          className="flex items-center gap-1"
-        >
-          <img
-            src={
-              item.likedByMe ? "/icons/heart-filled.svg" : "/icons/heart.svg"
-            }
-            className="w-6 h-6"
-          />
-          <span className="text-[0.9rem] text-[#3B3D40]">
-            {item.likeCount ?? 0}
-          </span>
-        </button>
-
-        {/* 참여하기 버튼 */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleParticipate(item.questionId);
-          }}
-          className={`px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium ${
-            participate[item.questionId]
-              ? "bg-[#B5BBC1] text-white"
-              : "bg-[#FA502E] text-white"
-          }`}
-        >
-          {participate[item.questionId] ? "참여 취소" : "참여하기"}
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // 하이라이트 카드
   const renderHighlightCard = (item, index) => {
@@ -357,18 +421,21 @@ export default function MainScreen() {
     const contentTitle = item.contentTitle || "콘텐츠 제목";
     const questionTitle = item.questionTitle || "질문 제목";
     const messageContent =
-      item.content || item.messageContent || "하이라이트 문장이 여기에 들어가요.";
+      item.content ||
+      item.messageContent ||
+      "하이라이트 문장이 여기에 들어가요.";
     const createdAt = item.scrappedAt || item.createdAt;
     const timeLabel = formatTimeAgo(createdAt);
 
     return (
-      <div
+        <div
         key={item.messageId ?? index}
-        className="w-[20.4375rem] ml-[1.5rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-5 border border-gray-100 mx-[1.5rem] my-[1rem]"
+        className="w-[20.4375rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-5 border border-gray-100 mx-[1.5rem] my-[1rem]"
       >
+        
         <div className="relative w-full flex items-start">
           <div className="mt-[0.5rem] ml-[0.25rem] leading-[1.5]">
-            <div className="flex items-center gap-[0.5rem] mb-[0.25rem]">
+            <div className="flex items-center mb-[0.25rem]">
               <img
                 src="/icons/profile-gray.svg"
                 alt="프로필"

@@ -1,9 +1,14 @@
+// src/screens/mypage/MyPageQuesScreen.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../../components/main/BottomNav";
 import MyPageNav from "../../components/mypage/MyPageNav";
 import { getMyQuestions } from "../../lib/questionService";
-import { getLikeStatus } from "../../lib/likeService";
+import {
+  getLikeStatus,
+  likeQuestion,
+  unlikeQuestion,   // ✅ 추가
+} from "../../lib/likeService";
 
 export default function MyPageQuesScreen() {
   const navigate = useNavigate();
@@ -14,7 +19,7 @@ export default function MyPageQuesScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchMyQuestions = async () => {
       try {
         setLoading(true);
@@ -44,6 +49,7 @@ export default function MyPageQuesScreen() {
                 ],
                 tags: q.tagNames || [],
                 likeCount: likeInfo.likeCount,
+                likedByMe: likeInfo.likedByMe,   // ✅ 여기 추가
                 createdAt: q.createdAt,
               };
             } catch (e) {
@@ -63,6 +69,7 @@ export default function MyPageQuesScreen() {
                 ],
                 tags: q.tagNames || [],
                 likeCount: 0,
+                likedByMe: false,               // ✅ 기본값 false
                 createdAt: q.createdAt,
               };
             }
@@ -81,8 +88,7 @@ export default function MyPageQuesScreen() {
     fetchMyQuestions();
   }, []);
 
-
-    const sortedQuestions = useMemo(() => {
+  const sortedQuestions = useMemo(() => {
     const arr = [...questions];
     arr.sort((a, b) => {
       const da = new Date(a.createdAt);
@@ -92,7 +98,48 @@ export default function MyPageQuesScreen() {
     return arr;
   }, [questions, sortType]);
 
+  // 좋아요 토글
+  const handleToggleLike = async (questionId) => {
+    let currentLiked = false;
 
+    // 낙관적 업데이트
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id === questionId) {
+          currentLiked = q.likedByMe;
+          return {
+            ...q,
+            likedByMe: !q.likedByMe,
+            likeCount: q.likeCount + (q.likedByMe ? -1 : 1),
+          };
+        }
+        return q;
+      })
+    );
+
+    try {
+      if (currentLiked) {
+        await unlikeQuestion(questionId);
+      } else {
+        await likeQuestion(questionId);
+      }
+    } catch (e) {
+      console.error("좋아요 토글 실패", e);
+      // 실패 시 롤백
+      setQuestions((prev) =>
+        prev.map((q) => {
+          if (q.id === questionId) {
+            return {
+              ...q,
+              likedByMe: currentLiked,
+              likeCount: q.likeCount + (currentLiked ? 1 : -1),
+            };
+          }
+          return q;
+        })
+      );
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
@@ -138,9 +185,7 @@ export default function MyPageQuesScreen() {
       </div>
 
       {/* 리스트 영역 */}
-      {/* 리스트 영역 */}
       <div className="flex-1 overflow-y-auto px-[1.5rem] mt-[1rem] pb-[7rem] no-scrollbar">
-        {/* 로딩 / 에러 / 빈 목록 처리 */}
         {loading && (
           <p className="mt-4 text-center text-[0.875rem] text-[#9CA3AF]">
             불러오는 중...
@@ -157,11 +202,18 @@ export default function MyPageQuesScreen() {
           </p>
         )}
 
-        {/* ==== 내 질문 목록 ==== */}
         {!loading &&
           !error &&
           sortedQuestions.map((q) => (
-            <div key={q.id}>
+            <div
+                  key={q.id}
+                  className="bg-white rounded-[1rem] shadow-[0px_4px_20px_rgba(0,0,0,0.06)] mb-[1rem] py-[0.25rem] cursor-pointer"
+                  onClick={() =>
+                    navigate("/detail", {
+                      state: { questionId: q.id },
+                    })
+                  }
+                >
               {/* 질문 문장 + 따옴표 */}
               <div className="relative w-full flex px-[1.5rem] items-start">
                 <img
@@ -224,9 +276,16 @@ export default function MyPageQuesScreen() {
 
               {/* 하트 + 대화 보기 버튼 */}
               <div className="flex items-center justify-between px-[1.5rem] mt-4 mb-[2rem]">
-                <button className="flex items-center gap-1">
+                <button
+                  className="flex items-center gap-1"
+                  onClick={() => handleToggleLike(q.id)}
+                >
                   <img
-                    src="/icons/heart-filled.svg"
+                    src={
+                      q.likedByMe
+                        ? "/icons/heart-filled.svg"
+                        : "/icons/heart.svg"
+                    }
                     className="w-5 h-5"
                     alt=""
                   />
@@ -234,22 +293,10 @@ export default function MyPageQuesScreen() {
                     {q.likeCount}
                   </span>
                 </button>
-
-                <button
-                  className="px-4 py-[0.4rem] rounded-[0.5rem] bg-[#54575C] text-white text-[0.75rem] font-bold"
-                  onClick={() =>
-                    navigate("/detail", {
-                      state: { questionId: q.id },
-                    })
-                  }
-                >
-                  대화 보기
-                </button>
               </div>
             </div>
           ))}
       </div>
-
 
       {/* 질문하기 버튼 */}
       <button

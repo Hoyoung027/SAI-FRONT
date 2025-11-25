@@ -25,7 +25,7 @@ import DetailScreen from "./pages/search/DetailScreen";
 import FriendsScreen from "./pages/setting/FriendScreen";
 import SettingScreen from "./pages/setting/SettingScreen";
 import ProfileEditScreen from "./pages/mypage/ProfileEditScreen";
-import NotificationPopup from "./components/NotificationPopup";
+import ChatStartPopup from "./components/ChatStartPopup";
 import FriendProfileScreen from "./pages/friend/FriendProfileScreen";
 import FriendRequestScreen from "./pages/friend/FriendRequestScreen";
 
@@ -38,7 +38,7 @@ export default function App() {
       <div className="flex justify-center items-center bg-white">
         <div className="min-w-[350px] max-w-[500px] w-full h-[100vh] bg-white shadow-md border border-gray-200">
           <Router>
-            <NotificationPopup />
+            <ChatStartPopup />
             <Routes>
               {/* 기본 경로로 들어오면 /login으로 자동 이동 */}
               <Route path="/" element={<Navigate to="/login" replace />} /> 

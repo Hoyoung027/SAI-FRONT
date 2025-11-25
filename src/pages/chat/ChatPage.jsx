@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ChatTopBar from "../../components/chat/ChatTopBar";
 import ChatBubble from "../../components/chat/ChatBubble";
 import ChatInput from "../../components/chat/ChatInput";
@@ -23,78 +23,25 @@ const serverTimeToUtcMs = (serverDateTimeStr) => {
   return utcDate.getTime(); 
 };
 
-const apiResponse = {
-    
-    title : "기억 통제로 인간은 더 행복해질까? 어쩌면 더 불행해질지도 몰라",
-    startAt : Date.now(),
-    endAt : new Date('2025-11-29 10:00:00'),
-    seed : [
-         {
-            id: uid(),
-            name: "임의의 닉네임",
-            text: "기억을 지울 수 있다면 정말 행복한 일일까요?",
-            time: "오후 7:51",
-            side: "left",
-            avatarBg: "bg-neutral-400",
-        },
-        {
-            id: uid(),
-            name: "멋있는 사자",
-            text:
-            "솔직히 말도 안 된다고 생각해요. 아픈 기억도 결국 제 일부잖아요. 그걸 없애면 제가 아닌 것 같을 것 같아요.",
-            time: "오후 7:51",
-            side: "left",
-            avatarBg: "bg-orange-400",
-            bookmarked: true,
-        },
-        {
-            id: uid(),
-            text:
-            "솔직히 말도 안 된다고 생각해요. 아픈 기억도 결국 제 일부잖아요. 그걸 없애면 제가 아닌 것 같을 것 같아요.",
-            time: "오후 7:51",
-            side: "right",
-        },
-        {
-            id: uid(),
-            name: "멋있는 사자",
-            text: "맞아요. 힘든 기억도 결국 우리가 살아가는 이유 중 하나죠.",
-            time: "오후 7:51",
-            side: "left",
-            avatarBg: "bg-orange-400",
-        },
-        {
-            id: uid(),
-            name: "멋있는 사자",
-            text: "이런것들이 모여서 우리는 앞으로 점점 더 나아질거에요.",
-            time: "오후 7:52",
-            side: "left",
-            avatarBg: "bg-orange-400",
-        },
-    {
-            id: uid(),
-            text:
-            "맞아요. 이렇게 대화하니 좋네요.",
-            time: "오후 7:53",
-            side: "right",
-        },
-    ]
-}
-
 
 export default function ChatPage() {
 
   const socketRef = useRef(null);
-
+  const navigate = useNavigate();
   const location = useLocation();
 
   {/* active : 활성화된 채팅, finished : 종료된 채팅  */}
   const status = location.state?.status || "finished"; 
-  const roomId = location.state?.roomId || 19;   
-  const questionId = location.state?.questionId || 19;
-  const questionTitle = location.state?.questionTitle || "기억 통제로 인간은 더 행복해질까? 어쩌면 더 불행해질지도 몰라";
+  const roomId = location.state?.roomId;   
+  const questionId = location.state?.questionId;
+  const questionTitle = location.state?.questionTitle || "";
   
-  const [messages, setMessages] = useState(apiResponse.seed);
+  const [messages, setMessages] = useState([]);
+
+
   const [side, setSide] = useState("right");
+  
+  
   const scrollRef = useRef(null);
   const didMountRef = useRef(false);
   // 상태 추적용 ref: 오버플로우 발생 여부, 사용자가 하단 근처인지 여부
@@ -102,8 +49,6 @@ export default function ChatPage() {
   const stickToBottomRef = useRef(false);
 
   const [searchText, setSearchText] = useState("");
-  const [searchResults, setSearchResults] = useState([]); // 검색된 메시지 id 리스트
-  const [searchIndex, setSearchIndex] = useState(0); // 현재 선택된 검색 결과 index
 
   const [startAt, setStartAt] = useState(null);
   const [endAt, setEndAt] = useState(null);
@@ -131,6 +76,9 @@ export default function ChatPage() {
     const el = scrollRef.current;
     if (!el) return;
 
+    console.log("questionId:", questionId);
+    console.log("roomId:", roomId);
+
     if (!didMountRef.current) {
       el.scrollTop = el.scrollHeight;        
       hasOverflowedRef.current = el.scrollHeight > el.clientHeight + 1;
@@ -154,13 +102,20 @@ export default function ChatPage() {
     hasOverflowedRef.current = overflowNow;
   }, [messages.length]);
 
-  const toggleBookmark = (id) => {
-    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, bookmarked: !m.bookmarked } : m)));
+
+  const toggleBookmark = (messageId) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.messageId === messageId
+          ? { ...m, bookmarked: !m.bookmarked }
+          : m
+      )
+    );
   };
 
   useEffect(() => {
 
-    // if (!questionId) return; // questionId 없으면 요청 안 보냄
+    if (!questionId) return; // questionId 없으면 요청 안 보냄
 
     const fetchTime = async () => {
       try {
@@ -193,7 +148,24 @@ export default function ChatPage() {
 
         const response = await getFinishChat(roomId);
 
-        console.log("getFinishChat response:", response.data);   
+        const formattedMessages = response.data.map((msg) => ({
+
+          messageId: msg.messageId,
+          content: msg.content,
+          senderId: msg.senderId,
+          senderNickname: msg.senderNickname,
+          isMine: msg.isMine,
+
+          // 더미 값
+          type: "text",          
+          time: msg.time || "오후 4:20",
+          images: msg.images ?? [],
+          files: msg.files ?? [],
+          bookmarked: false,
+          imageColor: "bg-orange-400", 
+        }));
+
+        setMessages(formattedMessages || []);
 
       } catch (err) {
         console.error("채팅 가져오기 실패:", err);
@@ -201,7 +173,9 @@ export default function ChatPage() {
         setIsTimeLoading(false);
       }
     };
+
     fetchMessage();
+  
   }, [questionId, status]);
 
   useEffect(() => {
@@ -224,7 +198,7 @@ export default function ChatPage() {
       const { from, message, room } = data;
 
       const newMsg = {
-        id: uid(),                
+        // messageId: ,                
         name: from,
         text: message,
         time: nowKo(),
@@ -267,9 +241,9 @@ export default function ChatPage() {
 
         const newMsg = {
           id: uid(),
-          text: content,
+          content: content,
           type: "text",
-          side: s,
+          isMine: true,
           time: nowKo(),
         };
         
@@ -319,7 +293,7 @@ export default function ChatPage() {
           endAt={endAt} 
           onExpire={() => console.log("타이머 종료")} 
           onSearchChange={setSearchText}
-          title={apiResponse.title}
+          title={questionTitle}
         />
       </header>
 
@@ -337,7 +311,7 @@ export default function ChatPage() {
             <div className="flex justify-center items-center pl-[1.5rem] pr-[1.5rem] pb-[0.5rem]">
               <div className="w-full flex justify-center items-center bg-[#F2F4F8] pt-[0.63rem] pb-[0.63rem] pl-[0.5rem] pr-[0.5rem]">
                 <span className="text-[0.75rem] text-[#191D1F]">
-                  {apiResponse.title}
+                  {questionTitle}
                 </span>
               </div>
             </div>
@@ -351,8 +325,32 @@ export default function ChatPage() {
             
             <div className="flex w-full flex-col justify-start items-stretch">
               {messages.map((m) => (
-                <ChatBubble key={m.id} msg={m} onToggleBookmark={toggleBookmark} onImageClick={handleImageClick} onFileClick={handleFileClick} highlightWord={searchText} />
+                <ChatBubble key={m.messageId} msg={m} onToggleBookmark={toggleBookmark} onImageClick={handleImageClick} onFileClick={handleFileClick} />
               ))}
+              {status === "finished" && (
+                <>
+                  <div className="w-full h-[4rem] bg-white pb-[0.5rem] mb-[1rem] pt-[0.5rem] flex items-center justify-center">
+                    <span className="text-center text-[0.625rem] text-[#3B3D40]">
+                      대화가 종료되었습니다.<br/>
+                      더 나누고 싶은 이야기가 있다면 댓글로 의견을 남기거나,<br/>
+                      새로운 질문을 등록해보세요.
+                    </span>
+                  </div>
+                  <div>
+                    <button 
+                      className="gap-[0.25rem] bg-[#3B3D40] pt-[0.625rem] pb-[0.625rem] pl-[1rem] pr-[1rem] rounded-[0.5rem] flex items-center justify-center mx-auto mb-[2.25rem]"
+                      onClick={() => {navigate("/question");}}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="13" viewBox="0 0 12 13" fill="none">
+                          <path d="M12 0C2 0 0.666667 9.1 0 13H1.332C1.776 10.8333 2.88756 9.64167 4.66667 9.425C7.33333 9.1 9.33333 6.825 10 4.875L9 4.225L9.66667 3.575C10.3333 2.925 11.0027 1.95 12 0Z" fill="white"/>
+                        </svg>
+                        <span className="text-white text-[0.75rem]">
+                          새로 질문하기
+                        </span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -378,7 +376,7 @@ export default function ChatPage() {
       )}
 
       <footer className="bg-white justify-center items-center">
-        <ChatInput onSend={handleSend} side={side} />
+        <ChatInput onSend={handleSend} side={side} status={status} />
       </footer>
     </div>
   );

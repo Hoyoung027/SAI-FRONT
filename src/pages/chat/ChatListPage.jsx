@@ -6,6 +6,24 @@ import ChatListTopBar from "../../components/chat/ChatListTopBar";
 import { readyChat, quitChat } from "../../lib/chatService";
 import { participateQuestion } from "../../lib/questionService";
 
+function formatCreatedAtToDate(createdAt) {
+  if (!createdAt) return "";
+
+  const parts = createdAt.split(" ");
+  const datePart = parts[0];
+  if (!datePart) return "";
+
+  const datePieces = datePart.split("-");
+  const year = datePieces[0];
+  const month = datePieces[1];
+  const day = datePieces[2];
+
+  if (!year || !month || !day) return "";
+
+  const shortYear = year.slice(2);
+
+  return shortYear + "." + month + "." + day;
+}
 
 export default function ChatListPage() {
   
@@ -13,6 +31,8 @@ export default function ChatListPage() {
   const [chatLists, setChatLists] = useState([]);  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  
 
   const navigate = useNavigate();
 
@@ -31,11 +51,12 @@ export default function ChatListPage() {
         
         const mapped  = response.data.map((q) => ({
           questionId: q.questionId,
+          description: q.questionDescription,
           roomId: q.roomId,                 
           title: q.questionTitle,           
           participant: q.currentParticipants,
           maxParticipant: q.maxParticipants, 
-          date: q.createdAt || "02.07" ,
+          date: formatCreatedAtToDate(q.createdAt) || "02.07" ,
           status:
             tab === "ready"
               ? "unready" 
@@ -79,6 +100,7 @@ export default function ChatListPage() {
       state: {
         questionId: item.questionId,
         roomId: item.roomId,
+        questionTitle: item.title,
         status: "finished",
       },
     });
@@ -158,6 +180,7 @@ export default function ChatListPage() {
       state: { 
         questionId: item.questionId,  
         roomId: item.roomId,
+        questionTitle: item.title,
         status: "active"
       }
     })
@@ -211,7 +234,7 @@ export default function ChatListPage() {
                   className="w-[3.1875rem] h-[4.25rem] rounded-[0.5rem] object-cover border-none"
                 />
 
-                <div className="flex flex-col flex-1 gap-[0.1875rem]">
+                <div className="flex flex-col flex-1 gap-[0.05rem]">
                   <p 
                     className={`
                       text-[0.625rem]
@@ -258,6 +281,12 @@ export default function ChatListPage() {
                   {tab === "finish" && (
                     <p className="text-[0.75rem] text-[#B5BBC1] line-clamp-1">
                       {item.question}
+                    </p>
+                  )}
+
+                  {tab === "finish" && (
+                    <p className="text-[0.75rem] text-[#B5BBC1] line-clamp-1">
+                      {item.description}
                     </p>
                   )}
                 </div>

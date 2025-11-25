@@ -42,12 +42,12 @@ export default function TimerBanner({ startAt, endAt, onExpire }) {
   const label = notStarted
     ? `질문 시작까지 ${fmt}`
     : finished
-    ? `대화 시간이 종료되었습니다`
+    ? `종료된 대화입니다`
     : `질문 종료까지 ${fmt}`;
 
   return (
     <div
-      className="w-full h-[1.5rem] bg-[#A4C14D] text-[#FFFFFF] text-[0.875rem] flex items-center justify-center"
+      className={`w-full h-[1.5rem] ${finished ? "bg-[#B5BBC1]" : "bg-[#A4C14D]"} text-[#FFFFFF] text-[0.875rem] flex items-center justify-center`}
       aria-live="polite"
     >
       {label}

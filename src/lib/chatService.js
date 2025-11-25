@@ -20,6 +20,5 @@ export async function getTimeChat(questionId) {
 }
 
 export async function getFinishChat(roomId) {
-  // return axiosInstance.get(`/api/v1/rooms/${roomId}/messages`);  
   return axiosInstance.get(`/api/v1/messages/${roomId}`);  
 }

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function ChatInput({ onSend, side = "right" }) {
+export default function ChatInput({ onSend, side = "right", status }) {
   const [text, setText] = useState("");
   const[open, setOpen] = useState(false);
 
@@ -11,9 +11,11 @@ export default function ChatInput({ onSend, side = "right" }) {
   const albumInputRef = React.useRef(null);
   const fileInputRef = React.useRef(null);  
 
+  const isFinished = status === "finished";
+
   const sendText = () => {
     const t = text.trim();
-    if (!t) return;
+  if (!t || isFinished) return; 
     onSend(t, side, "text");
     setText("");
   };
@@ -55,6 +57,7 @@ export default function ChatInput({ onSend, side = "right" }) {
 
   // 미리보기 → 전송
   const sendImages = () => {
+    if (isFinished) return; 
     onSend(previewImages, side, "image");
     setPreviewImages([]);
     setShowPreview(false);
@@ -101,7 +104,7 @@ export default function ChatInput({ onSend, side = "right" }) {
       <button
         type="button"
         aria-label="추가"
-        onClick={() => setOpen(true)}
+        onClick={() => !isFinished && setOpen(true)} 
         className="w-[1rem] h-[1rem] bg-[#FFFFFF] border-none outline-none"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -207,10 +210,17 @@ export default function ChatInput({ onSend, side = "right" }) {
       <div className="flex-1">
         <input
           value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), sendText())}
-          placeholder="메시지 전송"
+          onChange={(e) => !isFinished && setText(e.target.value)}
+           onKeyDown={(e) => {
+            if (isFinished) return;       
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendText();
+            }
+          }}
+          placeholder={isFinished ? "종료된 대화입니다." : "메시지 전송"}
           className="w-full pl-[1rem] border-none bg-[#FFFFFF] text-[15px] outline-none placeholder:text-[#B5BBC1] text-[#191D1F]"
+          readOnly={isFinished}
         />
       </div>
 
@@ -218,6 +228,7 @@ export default function ChatInput({ onSend, side = "right" }) {
         type="button"
         onClick={sendText}
         aria-label="전송"
+        disabled={isFinished}
         className="rounded-full bg-[#FFFFFF] text-white border-none"
       >
         <svg

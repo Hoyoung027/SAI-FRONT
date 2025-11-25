@@ -7,9 +7,9 @@ export const createQuestion = async (payload) => {
     title: payload.question,
     description: payload.description,
     maxParticipants: payload.participants,
+    startMode: payload.startMode,
     contentId: payload.contentId,
     tags: payload.tags
-    // startOption: payload.startOption
   };
   
   console.log("Request Body:", body); 
@@ -81,7 +81,9 @@ export async function participateQuestion(questionId) {
 }
 
 export async function cancelParticipateQuestion(questionId) {
-  const res = await axiosInstance.delete(`/api/v1/questions/cancel/${questionId}`);
+  const res = await axiosInstance.delete(`/api/v1/questions/cancel/${questionId}`,
+  getAuthConfig()
+  );
   return res.data;
 }
 

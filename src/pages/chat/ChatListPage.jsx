@@ -6,95 +6,33 @@ import ChatListTopBar from "../../components/chat/ChatListTopBar";
 import { readyChat, quitChat } from "../../lib/chatService";
 import { participateQuestion } from "../../lib/questionService";
 
-const API_RESPONSES = {
-  ready: [
-    {
-      id: 0,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 3,
-      maxParticipant: 4,
-      status: "participate",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 1,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 2,
-      maxParticipant: 4,
-      status: "cancelled",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    }
-  ],
+function formatCreatedAtToDate(createdAt) {
+  if (!createdAt) return "";
 
-  participate: [
-    {
-      id: 0,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 2,
-      maxParticipant: 4,
-      status: "participate",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 1,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 3,
-      maxParticipant: 4,
-      status: "cancelled",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 2,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      participant: 4,
-      maxParticipant: 4,
-      status: "participate",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-  ],
+  const parts = createdAt.split(" ");
+  const datePart = parts[0];
+  if (!datePart) return "";
 
-  finish: [
-    {
-      id: 0,
-      title: "기술이 인간의 감정과 어떻게 연결될까?",
-      question:
-        "좋든 기억이든 나쁜 기억이든 다 내 일부니까, 고통도 성장의 근원이 될 수 있지 않을까?",
-      participant: 4,
-      date: "25.10.09",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 1,
-      title: "기억 통제로 인간은 더 행복해질까?",
-      question:
-        "좋든 기억이든 나쁜 기억이든 다 내 일부니까, 고통도 성장의 근원이 될 수 있지 않을까?",
-      participant: 8,
-      date: "25.10.09",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-    {
-      id: 2,
-      title: "기억 통제로 인간은 더 행복해질까? 아니면 오히려 이것이 불행의 시작이 될까?",
-      question:
-        "좋든 기억이든 나쁜 기억이든 다 내 일부니까, 고통도 성장의 근원이 될 수 있지 않을까?",
-      participant: 5,
-      date: "25.10.09",
-      image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop"
-    },
-  ],
-};
+  const datePieces = datePart.split("-");
+  const year = datePieces[0];
+  const month = datePieces[1];
+  const day = datePieces[2];
+
+  if (!year || !month || !day) return "";
+
+  const shortYear = year.slice(2);
+
+  return shortYear + "." + month + "." + day;
+}
 
 export default function ChatListPage() {
   
-  // const [chatLists, setChatLists] = useState({
-  //   ready: API_RESPONSES.ready,   
-  //   participate: [],                  
-  //   finish: API_RESPONSES.finish,    
-  // });
   const [tab, setTab] = useState("ready");
   const [chatLists, setChatLists] = useState([]);  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  
 
   const navigate = useNavigate();
 
@@ -113,11 +51,12 @@ export default function ChatListPage() {
         
         const mapped  = response.data.map((q) => ({
           questionId: q.questionId,
+          description: q.questionDescription,
           roomId: q.roomId,                 
           title: q.questionTitle,           
-          participant: q.currentParticipant || 2,
-          maxParticipant: q.maxParticipant || 4, 
-          date: q.createdAt || "02.07" ,
+          participant: q.currentParticipants,
+          maxParticipant: q.maxParticipants, 
+          date: formatCreatedAtToDate(q.createdAt) || "02.07" ,
           status:
             tab === "ready"
               ? "unready" 
@@ -126,6 +65,7 @@ export default function ChatListPage() {
           "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=600&auto=format&fit=crop",
         }));
         
+        console.log("대화 목록 원본 데이터:", response.data);
         console.log("대화 목록 불러오기 성공:", mapped);
 
         if (!isMounted) return;
@@ -152,28 +92,65 @@ export default function ChatListPage() {
     };
   }, [tab]);
 
+  const handleFinishedClick = (item) => {
+    
+    if (tab !== "finish") return; 
+
+    navigate("/chat", {
+      state: {
+        questionId: item.questionId,
+        roomId: item.roomId,
+        questionTitle: item.title,
+        status: "finished",
+      },
+    });
+  };
+
   const handleReadyCancelClick = async (tab, item) => {
     try {
       
       await quitChat(item.questionId);
       
-      if(tab === "ready") {
-        setChatLists((prevLists) =>
-          prevLists.filter((prevItem) => prevItem.questionId !== item.questionId)
-        );
-      } else {
-        item.status = "cancelled";
+      setChatLists((prevLists) =>
+        prevLists.filter((prevItem) => prevItem.questionId !== item.questionId)
+      );
+      
+    } catch (error) {
+      console.error("대화 취소 실패:", error);
+      if (error.response?.status === 500) {
+        const message =
+          error.response?.data?.message ||
+          "자신이 개설한 질문방은 제거할 수 없습니다";
+        alert(message);
+        return;
+      }
+    }
+  };
+
+  const handleParticipateCancelClick = async (tab, item) => {
+    try {
+      
+      await quitChat(item.questionId);
+      
+      item.status = "cancelled";
         setChatLists((prevLists) =>
           prevLists.map((prevItem) =>
             prevItem.questionId === item.questionId ? item : prevItem
           )
         );
-      }
+      } catch (error) {
 
-    } catch (error) {
-      console.error("대화 취소 실패:", error);
-    }
-  };
+        console.error("대화 취소 실패:", error);
+        
+        if (error.response?.status === 500) {
+          const message =
+            error.response?.data?.message ||
+            "자신이 개설한 질문방은 제거할 수 없습니다";
+          alert(message);
+          return;
+        }
+      }
+    };
 
   const handleParticipateClick = async (tab, item) => {
     try {
@@ -190,7 +167,7 @@ export default function ChatListPage() {
     }
   };
 
-  const handleReadyClick = async (tab, item) => {
+  const handleReadyClick = async (item) => {
     try {
       
       await readyChat(item.questionId);   
@@ -202,7 +179,9 @@ export default function ChatListPage() {
     navigate("/chat", {
       state: { 
         questionId: item.questionId,  
-        roomId: item.roomId
+        roomId: item.roomId,
+        questionTitle: item.title,
+        status: "active"
       }
     })
 
@@ -241,150 +220,135 @@ export default function ChatListPage() {
 
         {chatLists.map((item) => {
 
-          const isReadyTab = tab === "ready";
-          const isUnready = item.status === "unready";
-          const isReady = item.status === "ready";
-
-          const isParticipateTab = tab === "participate";
-          const isParticipating = item.status === "participate";
-
-          const isFinishedTab = tab === "finish";
-
-          const showActionButton = !isFinishedTab;
-
-          let buttonLabel = "";
-          let buttonStyle = "";
-          let handleActionClick = async () => {};
-
           return (
             <div
               key={item.questionId}  
+              onClick={()=>handleFinishedClick(item)}
               className="text-left"
             >
-            <div
-              className="flex items-center h-[5.75rem] bg-white pl-[1.25rem] pr-[1.25rem] pt-[0.75rem] pb-[0.75rem] gap-[0.625rem]"
-            >
+              <div
+                className="flex items-center h-[5.75rem] bg-white pl-[1.25rem] pr-[1.25rem] pt-[0.75rem] pb-[0.75rem] gap-[0.625rem]"
+              >
+                <img
+                  src={item.image}
+                  className="w-[3.1875rem] h-[4.25rem] rounded-[0.5rem] object-cover border-none"
+                />
 
-              <img
-                src={item.image}
-                className="w-[3.1875rem] h-[4.25rem] rounded-[0.5rem] object-cover border-none"
-              />
-
-              <div className="flex flex-col flex-1 gap-[0.1875rem]">
-                <p 
-                  className={`
-                    text-[0.625rem]
-                    ${tab === "ready" ? "text-[#007AFF]" : ""}
-                    ${tab === "participate" ? "text-[#7DCA01]" : ""}
-                    ${tab === "finish" ? "text-[#B5BBC1]" : ""}
-                  `}
-                >
-                  콘텐츠명
-                </p>
+                <div className="flex flex-col flex-1 gap-[0.05rem]">
+                  <p 
+                    className={`
+                      text-[0.625rem]
+                      ${tab === "ready" ? "text-[#007AFF]" : ""}
+                      ${tab === "participate" ? "text-[#7DCA01]" : ""}
+                      ${tab === "finish" ? "text-[#B5BBC1]" : ""}
+                    `}
+                  >
+                    콘텐츠명
+                  </p>
                 
-                <div className="flex items-center gap-[0.5rem]">
+                  <div className="flex items-center gap-[0.5rem]">
 
-                  <span className="text-[0.875rem] text-[#3B3D40] line-clamp-1">
-                    {item.title}
-                  </span>
-
-                  {tab === "finish" && (
-                    <span className="text-[#CCD2D8] text-[0.875rem] font-normal">
-                      {item.participant}
+                    <span className="text-[0.875rem] text-[#3B3D40] line-clamp-1">
+                      {item.title}
                     </span>
-                  )}
 
-                  {tab === "finish" && (
-                    <div className="ml-auto">
-                      <span className="text-[0.75rem] text-[#B5BBC1]">{item.date}</span>
-                    </div>
-                  )}
-                </div>
+                    {tab === "finish" && (
+                      <span className="text-[#CCD2D8] text-[0.875rem] font-normal">
+                        {item.participant}
+                      </span>
+                    )}
+
+                    {tab === "finish" && (
+                      <div className="ml-auto">
+                        <span className="text-[0.75rem] text-[#B5BBC1]">{item.date}</span>
+                      </div>
+                    )}
+                  </div>
               
 
-                {tab == "ready" && (
-                  <p className="text-[0.75rem] text-[#B5BBC1]">
-                    준비 완료 {item.participant}/{item.maxParticipant}명 · 모두 준비되면 시작돼요
-                  </p>
+                  {tab == "ready" && (
+                    <p className="text-[0.75rem] text-[#B5BBC1]">
+                      준비 완료 {item.participant}/{item.maxParticipant}명 · 모두 준비되면 시작돼요
+                    </p>
+                  )}
+
+                  {tab == "participate" && (
+                    <p className="text-[0.75rem] text-[#B5BBC1]">
+                      참여 중 {item.participant}/{item.maxParticipant}명 · 다 모이면 시작돼요
+                    </p>
+                  )}
+
+                  {tab === "finish" && (
+                    <p className="text-[0.75rem] text-[#B5BBC1] line-clamp-1">
+                      {item.question}
+                    </p>
+                  )}
+
+                  {tab === "finish" && (
+                    <p className="text-[0.75rem] text-[#B5BBC1] line-clamp-1">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* 대화 준비에서 버튼 */}
+                {tab === "ready" && item.status === "ready" && (
+                  <div>
+                  <button 
+                    className="flex justify-center items-center h-[2.125rem] bg-[#CCD2D8] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
+                    onClick={()=>handleReadyCancelClick(tab, item)}
+                  >
+                    <span className="text-white text-[0.75rem]">
+                      취소
+                    </span>
+                  </button>
+                  </div>
                 )}
 
-                {tab == "participate" && (
-                  <p className="text-[0.75rem] text-[#B5BBC1]">
-                    참여 중 {item.participant}/{item.maxParticipant}명 · 다 모이면 시작돼요
-                  </p>
+                {tab === "ready" && item.status === "unready" && (
+                  <div>
+                  <button 
+                    className="flex justify-center items-center h-[2.125rem] bg-[#FA502E] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
+                    onClick={()=>handleReadyClick(item)}    
+                  >
+                    
+                    <span className="text-white text-[0.75rem]">
+                      준비
+                    </span>
+                  </button>
+                  </div>
                 )}
 
-                {tab === "finish" && (
-                  <p className="text-[0.75rem] text-[#B5BBC1] line-clamp-1">
-                    {item.question}
-                  </p>
+                {/* 신청 질문에서 버튼 */}
+                {tab === "participate" && item.status === "participate" && (
+                  <div>
+                  <button 
+                    className="flex justify-center items-center h-[2.125rem] bg-[#CCD2D8] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
+                    onClick={()=>handleParticipateCancelClick(tab, item)}
+                  >
+
+                    <span className="text-white text-[0.75rem]">
+                      취소
+                    </span>
+                  </button>
+                  </div>
+                )}
+
+                {tab === "participate" && item.status === "cancelled" && (
+                  <div>
+                  <button 
+                    className="flex justify-center items-center h-[2.125rem] bg-[#FA502E] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
+                    onClick={()=>handleParticipateClick(tab, item)}    
+                  >
+                    <span className="text-white text-[0.75rem]">
+                      참여
+                    </span>
+                  </button>
+                  </div>
                 )}
               </div>
-
-              {/* 대화 준비에서 버튼 */}
-              {tab === "ready" && item.status === "ready" && (
-                <div>
-                <button className="flex justify-center items-center h-[2.125rem] bg-[#CCD2D8] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]">
-                  <span className="text-white text-[0.75rem]">
-                    취소
-                  </span>
-                </button>
-                </div>
-              )}
-
-              {tab === "ready" && item.status === "unready" && (
-                <div>
-                <button 
-                  className="flex justify-center items-center h-[2.125rem] bg-[#FA502E] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
-                  onClick={()=>navigate("/chat", {
-                        state: { 
-                          questionId: item.questionId,
-                          roomId: item.roomId 
-                        }
-                  })}    
-                >
-                  
-                  <span className="text-white text-[0.75rem]">
-                    준비
-                  </span>
-                </button>
-                </div>
-              )}
-
-              {/* 신청 질문에서 버튼 */}
-              {tab === "participate" && item.status === "participate" && (
-                <div>
-                <button className="flex justify-center items-center h-[2.125rem] bg-[#CCD2D8] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]">
-                  <span className="text-white text-[0.75rem]">
-                    취소
-                  </span>
-                </button>
-                </div>
-              )}
-
-              {tab === "participate" && item.status === "cancelled" && (
-                <div>
-                <button 
-                  className="flex justify-center items-center h-[2.125rem] bg-[#FA502E] rounded-[0.5rem] pl-[0.75rem] pr-[0.75rem] pt-[0.125rem] pb-[0.125rem]"
-                  onClick={()=>navigate("/chat", {
-                        state: { 
-                          questionId: item.questionId,
-                          roomId: item.roomId 
-                        }
-                  })}     
-                >
-                  <span className="text-white text-[0.75rem]">
-                    참여
-                  </span>
-                </button>
-                </div>
-              )}
             </div>
-          </div>
           )
-
-          
-          
         })}
       </div>
     );

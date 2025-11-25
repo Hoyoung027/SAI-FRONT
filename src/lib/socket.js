@@ -1,4 +1,3 @@
-// src/lib/socket.js
 import { io } from "socket.io-client";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
@@ -45,6 +44,23 @@ export function getSocket() {
     return socket;
 }
 
+export function subscribeToAlarm(handler) {
+  
+    const socket = getSocket();
+
+    const listener = (payload) => {
+        console.log("[socket] new notification:", payload);
+        if (typeof handler === "function") {
+        handler(payload);
+        }
+    };
+
+    socket.on("new notification", listener);
+
+    return () => {
+        socket.off("new notification", listener);
+    };
+}
 
 export function sendMessageSocket(message) {
 

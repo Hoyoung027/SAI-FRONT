@@ -7,7 +7,8 @@ import { getSocket, receiveMessageSocket, sendMessageSocket, joinRoomSocket  } f
 import { getTimeChat, getFinishChat, scrapMessage, unscrapMessage, finishChat } from "../../lib/chatService";
 import { getMyInfo } from "../../lib/memberService";
 
-const SAI_TIME_LIMIT = 42 * 60 * 1000; // 42분
+// const SAI_TIME_LIMIT = 42 * 60 * 1000; // 42분
+const SAI_TIME_LIMIT = 1 * 60 * 1000; // 1분
 
 // Helpers
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -77,9 +78,9 @@ export default function ChatPage() {
     {/* 대화 종료 API 호출 */}
     async function finish() {
       try {
-        if (roomId) {
+        if (questionId) {
 
-          await finishChat(roomId);
+          await finishChat(questionId);
           console.log("[chat] 대화 종료");
         
         } else {

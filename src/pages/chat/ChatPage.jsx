@@ -5,10 +5,9 @@ import ChatBubble from "../../components/chat/ChatBubble";
 import ChatInput from "../../components/chat/ChatInput";
 import { getSocket, receiveMessageSocket, sendMessageSocket, joinRoomSocket  } from "../../lib/socket";
 import { getTimeChat, getFinishChat, scrapMessage, unscrapMessage, finishChat } from "../../lib/chatService";
+import { getMyInfo } from "../../lib/memberService";
 
-const SAI_TIME_LIMIT = 42 * 60 * 1000; // 42분 in milliseconds
-// const SAI_TIME_LIMIT = 2 * 60 * 1000; // 1분
-
+const SAI_TIME_LIMIT = 42 * 60 * 1000; // 42분
 
 // Helpers
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -48,6 +47,8 @@ export default function ChatPage() {
   const roomId = location.state?.roomId;   
   const questionId = location.state?.questionId;
   const questionTitle = location.state?.questionTitle || "";
+  const [memberId, setMemberId] = useState(null);
+
   
   // 채팅 메시지 
   const [messages, setMessages] = useState([]);  
@@ -135,6 +136,29 @@ export default function ChatPage() {
     hasOverflowedRef.current = overflowNow;
   }, [messages.length]);
 
+  {/* 정보 조회 */}
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchMyInfo() {
+      try {
+        const data = await getMyInfo();
+
+        if (!cancelled) {
+          setMemberId(data.memberId);
+          console.log("[chat] memberId:", data.memberId);
+        }
+      } catch (err) {
+        console.error("[chat] 내 정보 조회 실패:", err);
+      }
+    }
+
+    fetchMyInfo();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   {/* 메시지 스크랩 */}
   const toggleBookmark = async (messageId) => {
@@ -202,7 +226,6 @@ export default function ChatPage() {
 
   {/* 종료된 채팅 메시지 불러오기 */}
   useEffect(() => {
-    if(status !== "finished") return;
 
     const fetchMessage = async () => {
       try {
@@ -261,16 +284,21 @@ export default function ChatPage() {
 
   {/* 메시지 수신*/}
   useEffect(() => {
-    if (!roomId) return;
-
+    
+    if (!roomId || memberId == null) return;
+    
     const cancelReceive = receiveMessageSocket((payload) => {
+
+      const isMine = payload.senderId === String(memberId);
+
+      console.log("sender ID", payload.senderId, "my ID", memberId);
 
       const newMsg = {
         messageId: payload.messageId,
         content: payload.content,
         senderId: payload.senderId,
         senderNickname: payload.senderNickname,
-        isMine: false,
+        isMine: isMine,
         type: payload.type === "TEXT" ? "TEXT" : "TEXT", 
         time: formatTimeFromISO(payload.createdAt),
         images: [],
@@ -285,7 +313,7 @@ export default function ChatPage() {
     return () => {
       cancelReceive();
     };
-  }, [roomId]);
+  }, [roomId, memberId]);
 
 
   {/*메세지 전송 핸들러*/}
@@ -332,7 +360,7 @@ export default function ChatPage() {
           senderNickname: "",      
         };
         
-        setMessages((prev) => [...prev, newMsg]);
+        // setMessages((prev) => [...prev, newMsg]);
 
         if(roomId) {
           sendMessageSocket({ roomId, content, type: "TEXT" });

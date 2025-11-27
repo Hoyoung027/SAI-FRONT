@@ -11,6 +11,40 @@ import {
 } from "../../lib/questionService";
 import { likeQuestion, unlikeQuestion } from "../../lib/likeService";
 
+/* ================= 공통 상태 라벨 / 칩 ================= */
+
+// 메인 / 마이페이지에서 쓰던 것과 동일하게 맞춤
+function getStatusLabel(status, current, max) {
+  if (!status) return null;
+
+  switch (status) {
+    case "RECRUITING":
+      // 모집 중인데 인원이 다 찼으면 진행중으로 처리
+      if (max && current >= max) return "진행중";
+      return "참여 가능";
+    case "ACTIVE":
+    case "READY_CHECK":
+      return "진행중";
+    case "COMPLETED":
+    case "DONE":
+    case "FINISHED":
+      return "종료";
+    default:
+      return null;
+  }
+}
+
+function getStatusChipClass(label) {
+  if (label === "진행중") {
+    return "bg-[#F3FFE1] text-[#6BB600]";
+  }
+  if (label === "종료") {
+    return "bg-[#F3F4F6] text-[#4B5563]";
+  }
+  // 참여 가능
+  return "bg-[#E3F2FF] text-[#1D72FF]";
+}
+
 export default function SearchResult() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,8 +55,8 @@ export default function SearchResult() {
 
   const [inputQuery, setInputQuery] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
-  const [tags, setTags] = useState(initialTags);               // 칩 표시용
-  const [categories, setCategories] = useState(initialCategories); // API용
+  const [tags, setTags] = useState(initialTags); // 칩 표시용(문자열)
+  const [categories, setCategories] = useState(initialCategories); // {main, sub} 배열
 
   const [likeState, setLikeState] = useState({});
   const [results, setResults] = useState([]);
@@ -30,13 +64,15 @@ export default function SearchResult() {
   const [openSort, setOpenSort] = useState(false);
   const [sortType, setSortType] = useState("인기순");
 
-  // ================= 검색 호출 =================
+  /* ================= 검색 호출 ================= */
+
   const fetchResults = async () => {
     try {
       const hasCategories = categories && categories.length > 0;
       const hasTextOrTags =
         (query && query.trim().length > 0) || (tags && tags.length > 0);
 
+      // 아무 조건도 없으면 검색 안 함
       if (!hasCategories && !hasTextOrTags) {
         setResults([]);
         return;
@@ -47,10 +83,10 @@ export default function SearchResult() {
       let tagsToSend = [];
 
       if (hasCategories) {
-        // 🔥 카테고리 검색: main/sub 기준 필터만 사용
+        // 카테고리 검색: main/sub 기준만 사용
         categoriesToSend = categories;
         keywordToUse = "";
-        tagsToSend = []; // 태그 조건은 사용 안 함
+        tagsToSend = [];
       } else {
         // 일반 검색 (키워드 + 태그)
         keywordToUse = (query || "").trim();
@@ -75,10 +111,11 @@ export default function SearchResult() {
 
   useEffect(() => {
     fetchResults();
-    // categories도 의존성에 포함
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, tags, sortType, categories]);
 
-  // ================= 좋아요 =================
+  /* ================= 좋아요 ================= */
+
   const handleToggleLike = async (questionId) => {
     const base = results.find((r) => r.questionId === questionId) || {};
     const current = likeState[questionId] || {
@@ -106,7 +143,8 @@ export default function SearchResult() {
     }
   };
 
-  // ================= 참여/취소 =================
+  /* ================= 참여/취소 ================= */
+
   const handleToggleParticipate = async (questionId, currentMyStatus) => {
     try {
       if (currentMyStatus === "NONE") {
@@ -130,6 +168,7 @@ export default function SearchResult() {
         );
         setPopup("cancel");
       } else {
+        // JOINED는 여기서 안 바꿈
         return;
       }
     } catch (e) {
@@ -140,42 +179,21 @@ export default function SearchResult() {
     }
   };
 
-  // ================= 상태 라벨/칩 =================
-  const getStatusLabel = (status, current, max) => {
-    if (!status) return null;
-    switch (status) {
-      case "RECRUITING":
-        if (max && current >= max) return "진행중";
-        return "참여 가능";
-      case "PROGRESS":
-      case "IN_PROGRESS":
-        return "진행중";
-      case "COMPLETED":
-      case "DONE":
-        return "종료";
-      default:
-        return null;
-    }
-  };
+  /* ================= 태그/프로필/이동 ================= */
 
-  const getStatusChipClass = (label) => {
-    if (label === "진행중") return "bg-[#F3FFE1] text-[#6BB600]";
-    if (label === "종료") return "bg-[#F3F4F6] text-[#4B5563]";
-    return "bg-[#E3F2FF] text-[#1D72FF]";
-  };
-
-  // 칩 X 눌렀을 때
   const handleRemoveTag = (tag) => {
     const updatedTags = tags.filter((t) => t !== tag);
     setTags(updatedTags);
 
-    // 카테고리 검색 중이면 categories에서도 제거
+    // 카테고리 검색이었다면 categories에서도 sub 삭제
     if (categories && categories.length > 0) {
       setCategories((prev) => prev.filter((c) => c.sub !== tag));
     }
 
-    // 카테고리까지 다 지워지면 키워드도 같이 리셋
-    if (updatedTags.length === 0 && (!categories || categories.length === 0)) {
+    if (
+      updatedTags.length === 0 &&
+      (!categories || categories.length === 0)
+    ) {
       setQuery("");
       setInputQuery("");
     }
@@ -185,7 +203,6 @@ export default function SearchResult() {
     e.stopPropagation();
 
     const hostId = item.hostId;
-
     if (!hostId && hostId !== 0) {
       console.log("[SearchResult] item without hostId:", item);
       alert("질문 작성자 ID 정보를 찾을 수 없어요.");
@@ -201,12 +218,43 @@ export default function SearchResult() {
     });
   };
 
-  // ================= 렌더 =================
+  // 질문 카드에서 "대화 보기" 눌렀을 때
+  const goToChatOrDetail = (item) => {
+    const status = item.questionStatus;
+    const myStatus = item.myParticipationStatus || "NONE";
+
+    const isFinished =
+      status === "FINISHED" ||
+      status === "COMPLETED" ||
+      status === "DONE";
+
+    const canWatchChat = isFinished || myStatus === "JOINED";
+
+    // roomId 없으면 디테일에서 다시 처리
+    if (!canWatchChat || !item.roomId) {
+      navigate("/detail", {
+        state: { questionId: item.questionId, item },
+      });
+      return;
+    }
+
+    navigate("/chat", {
+      state: {
+        questionId: item.questionId,
+        roomId: item.roomId,
+        questionTitle: item.questionTitle,
+        status: item.questionStatus,
+      },
+    });
+  };
+
+  /* ================= 렌더 ================= */
+
   return (
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
       <Navbar />
 
-      {/* 팝업 */}
+      {/* 참여/취소 팝업 */}
       {popup && (
         <div className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 w-[100%] max-w-[500px] p-4 z-[200] animate-slide-down">
           <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#F2F2F2]">
@@ -254,7 +302,9 @@ export default function SearchResult() {
 
         {/* 상단 정보 */}
         <div className="flex justify-between items-center px-[2.5rem] mt-[1.5rem]">
-          <p className="text-[1rem] font-semibold">검색결과 {results.length}</p>
+          <p className="text-[1rem] font-semibold">
+            검색결과 {results.length}
+          </p>
 
           <div className="relative text-[0.75rem]">
             <button
@@ -317,15 +367,16 @@ export default function SearchResult() {
 
               const current =
                 item.currentParticipants ?? item.participants ?? 0;
-              const max = item.maxParticipants ?? item.maxparticipants ?? 0;
+              const max =
+                item.maxParticipants ?? item.maxparticipants ?? 0;
 
               const statusLabel = getStatusLabel(
                 item.questionStatus,
                 current,
                 max
               );
-              const showJoinButton = statusLabel === "참여 가능";
               const myStatus = item.myParticipationStatus || "NONE";
+              const canParticipate = statusLabel === "참여 가능";
 
               return (
                 <div
@@ -361,6 +412,7 @@ export default function SearchResult() {
                     alt=""
                   />
 
+                  {/* 작성자/콘텐츠 정보 */}
                   <button
                     type="button"
                     onClick={(e) => handleProfileClick(e, item)}
@@ -383,7 +435,8 @@ export default function SearchResult() {
                     {item.mainCategory} &gt; {item.subCategory}
                   </p>
 
-                  <div className="flex items-center flex-wrap gap-[0.38rem] mt-[0.75rem]">
+                  {/* 인원 + 상태칩 + 태그 */}
+                  <div className="flex flex-wrap items-center gap-[0.38rem] mt-[0.75rem]">
                     <div className="flex items-center text-[0.75rem] bg-[#F2F4F8] rounded-md px-[0.4rem] py-[0.2rem]">
                       <img
                         src="/icons/people.svg"
@@ -413,7 +466,9 @@ export default function SearchResult() {
                     ))}
                   </div>
 
+                  {/* 좋아요 + 참여/대화 버튼 */}
                   <div className="flex justify-between items-center mt-[0.8rem]">
+                    {/* 좋아요 */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -435,23 +490,25 @@ export default function SearchResult() {
                       </span>
                     </button>
 
+                    {/* 참여/취소/대화 보기 */}
                     {myStatus === "JOINED" ? (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate("/detail", {
-                            state: { questionId: item.questionId, item },
-                          });
+                          goToChatOrDetail(item);
                         }}
                         className="px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
                       >
                         대화 보기
                       </button>
-                    ) : showJoinButton ? (
+                    ) : canParticipate ? (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleToggleParticipate(item.questionId, myStatus);
+                          handleToggleParticipate(
+                            item.questionId,
+                            myStatus
+                          );
                         }}
                         className={`px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium ${
                           myStatus === "WAITING"
@@ -465,9 +522,7 @@ export default function SearchResult() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate("/detail", {
-                            state: { questionId: item.questionId, item },
-                          });
+                          goToChatOrDetail(item);
                         }}
                         className="px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
                       >

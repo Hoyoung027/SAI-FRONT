@@ -381,7 +381,7 @@ export default function SearchResult() {
               return (
                 <div
                   key={item.questionId}
-                  className="pb-[1.25rem] mb-[1.25rem] cursor-pointer"
+                  className="mb-[1.25rem] cursor-pointer"
                   onClick={() =>
                     navigate("/detail", {
                       state: { questionId: item.questionId, item },
@@ -406,11 +406,7 @@ export default function SearchResult() {
                   >
                     {item.questionDescription}
                   </p>
-                  <img
-                    src="/icons/line.svg"
-                    className="w-full mt-[0.8rem] mb-[0.5rem]"
-                    alt=""
-                  />
+                  <div className="w-full h-[1px] bg-[#E7EBEF] mx-auto mt-[0.8rem] mb-[0.75rem]" />
 
                   {/* 작성자/콘텐츠 정보 */}
                   <button

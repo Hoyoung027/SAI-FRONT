@@ -99,7 +99,7 @@ export default function SearchResult() {
         categories: categoriesToSend,
         tags: tagsToSend,
         page: 0,
-        size: 10,
+        size: 50,
         sortType,
       });
 
@@ -149,6 +149,8 @@ export default function SearchResult() {
     try {
       if (currentMyStatus === "NONE") {
         await participateQuestion(questionId);
+        await fetchResults();
+
         setResults((prev) =>
           prev.map((item) =>
             item.questionId === questionId

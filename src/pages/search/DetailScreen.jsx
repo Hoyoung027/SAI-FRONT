@@ -1,7 +1,11 @@
 // src/screens/main/DetailScreen.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getQuestionDetail, participateQuestion } from "../../lib/questionService";
+import {
+  getQuestionDetail,
+  participateQuestion,
+  cancelParticipateQuestion,
+} from "../../lib/questionService";
 
 // 상태값 → 라벨 변환 (참여 가능 / 진행중 / 종료)
 const getStatusLabel = (status, current, max) => {
@@ -33,7 +37,7 @@ export default function DetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 참여 팝업 상태
+  // 참여/취소 팝업 상태: "participate" | "cancel" | "error" | null
   const [popup, setPopup] = useState(null);
 
   useEffect(() => {
@@ -69,7 +73,7 @@ export default function DetailScreen() {
 
   const item = data;
 
-  // 상세 정보 기준으로 상태 라벨 계산
+  // 상세 정보 기준 상태 라벨
   const statusLabel = getStatusLabel(
     item.questionStatus,
     item.currentParticipants,
@@ -80,20 +84,68 @@ export default function DetailScreen() {
   const isWithReady = item.startMode === "WITH_READY";
   const isAllReady = item.startMode === "ALL_READY";
 
+  // 백엔드에서 내려주는 내 참여 상태 (없으면 NONE)
+  const myStatus = item.myParticipationStatus || "NONE";
+
+  // 버튼 레이블 / 색 결정
+  let bottomLabel = "대화 내역 보기";
+  let bottomClass = "bg-[#191D1F] text-white";
+
+  if (myStatus === "JOINED") {
+    // 이미 참여 중이면 무조건 대화 보기
+    bottomLabel = "대화 내역 보기";
+    bottomClass = "bg-[#54575C] text-white";
+  } else if (isJoinable) {
+    // 참여 가능일 때만 참여/취소 버튼
+    if (myStatus === "WAITING") {
+      bottomLabel = "참여 취소";
+      bottomClass = "bg-[#B5BBC1] text-white";
+    } else {
+      bottomLabel = "참여하기";
+      bottomClass = "bg-[#FA502E] text-white";
+    }
+  } else {
+    // 모집 중이 아니면 대화 보기
+    bottomLabel = "대화 내역 보기";
+    bottomClass = "bg-[#191D1F] text-white";
+  }
+
   // 하단 버튼 클릭 처리
   const handleBottomButtonClick = async () => {
-    // 참여 가능한 상태가 아니면 → 대화 내역 보기
-    if (!isJoinable) {
-      // 실제 대화 내역 페이지 연결되면 여기서 navigate로 교체
-      // 예: navigate("/conversation-detail", { state: { questionId } });
+    // 1) 이미 참여 중이거나, 모집 중이 아니면 → 대화 내역 보기
+    if (myStatus === "JOINED" || !isJoinable) {
+      // TODO: 실제 대화 내역 페이지로 이동
+      // 예시: navigate("/conversation-detail", { state: { questionId } });
       alert("대화 내역 화면으로 이동시켜 주세요.");
       return;
     }
 
-    // 참여 가능한 상태일 때 → 참여 API 호출 + 팝업
+    // 2) 참여 가능 + 내 상태에 따라 참여 / 취소
     try {
-      await participateQuestion(questionId);
-      setPopup("participate");
+      if (myStatus === "NONE") {
+        // 참여 신청
+        await participateQuestion(questionId);
+
+        setData((prev) =>
+          prev
+            ? { ...prev, myParticipationStatus: "WAITING" }
+            : prev
+        );
+        setPopup("participate");
+      } else if (myStatus === "WAITING") {
+        // 대기 중 취소
+        await cancelParticipateQuestion(questionId);
+
+        setData((prev) =>
+          prev
+            ? { ...prev, myParticipationStatus: "NONE" }
+            : prev
+        );
+        setPopup("cancel");
+      } else {
+        // 그 외 상태는 여기서 처리 안 함
+        return;
+      }
     } catch (e) {
       console.error("참여 API 실패", e);
       setPopup("error");
@@ -104,7 +156,7 @@ export default function DetailScreen() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white font-[Pretendard]">
-      {/* 참여 팝업 */}
+      {/* 참여/취소 팝업 */}
       {popup && (
         <div className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 w-[100%] max-w-[500px] p-4 z-[200] animate-slide-down">
           <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#F2F2F2]">
@@ -118,11 +170,20 @@ export default function DetailScreen() {
                 <p className="text-[0.875rem] font-bold text-[#3B3D40] leading-[1.4rem]">
                   {popup === "participate"
                     ? "질문 참여가 등록되었습니다"
+                    : popup === "cancel"
+                    ? "참여가 취소되었어요"
                     : "참여 처리 중 오류가 발생했어요"}
                 </p>
+
                 {popup === "participate" && (
                   <p className="text-[0.75rem] text-[#3B3D40] leading-[1.3rem] mt-[0.25rem] whitespace-pre-line">
                     {"대화 인원이 모두 모이면 알려드릴게요.\n알림을 받으면 30초 안에 ‘준비 완료’를 눌러 참여할 수 있습니다."}
+                  </p>
+                )}
+
+                {popup === "cancel" && (
+                  <p className="text-[0.75rem] text-[#3B3D40] leading-[1.3rem] mt-[0.25rem] whitespace-pre-line">
+                    {"다시 참여하려면 ‘참여하기’를 눌러주세요."}
                   </p>
                 )}
               </div>
@@ -187,7 +248,7 @@ export default function DetailScreen() {
           {item.contentName}
         </p>
         <p className="text-[0.75rem] text-[#9CA3AF] mt-[0.5rem]">
-            {item.mainCategory} &gt; {item.subCategory}
+          {item.mainCategory} &gt; {item.subCategory}
         </p>
         <div className="w-full h-[0.05rem] bg-[#E5E5E5] my-4"></div>
       </div>
@@ -234,15 +295,13 @@ export default function DetailScreen() {
         ))}
       </div>
 
-      {/* 하단 버튼 : 참여하기 / 대화 내역 보기 */}
+      {/* 하단 버튼 : 참여하기 / 참여 취소 / 대화 내역 보기 */}
       <div className="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-[0_-2px_10px_rgba(0,0,0,0.07)]">
         <button
           onClick={handleBottomButtonClick}
-          className={`w-full h-[3.2rem] text-[1rem] rounded-xl font-semibold ${
-            isJoinable ? "bg-[#FA502E] text-white" : "bg-[#191D1F] text-white"
-          }`}
+          className={`w-full h-[3.2rem] text-[1rem] rounded-xl font-semibold ${bottomClass}`}
         >
-          {isJoinable ? "참여하기" : "대화 내역 보기"}
+          {bottomLabel}
         </button>
       </div>
 

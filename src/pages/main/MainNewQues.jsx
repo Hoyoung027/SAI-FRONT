@@ -8,7 +8,6 @@ import {
   cancelParticipateQuestion,
 } from "../../lib/questionService";
 import {
-  getLikeStatus,
   likeQuestion,
   unlikeQuestion,
 } from "../../lib/likeService";
@@ -29,16 +28,13 @@ function getStatusLabel(status, current, max) {
 
     case "COMPLETED":
     case "DONE":
-    case "FINISHED":    // 🔥 DetailScreen 에서 쓰던 값
+    case "FINISHED": // DetailScreen 에서 쓰던 값
       return "종료";
 
     default:
-      // 최소한 뭐라도 보이게 하려면 임시로 이렇게:
-      // return status;
       return null;
   }
 }
-
 
 // 상태칩 스타일 결정
 function getStatusChipClass(label) {
@@ -51,7 +47,6 @@ function getStatusChipClass(label) {
   // 참여 가능
   return "bg-[#E3F2FF] text-[#1D72FF]";
 }
-
 
 export default function SearchResult() {
   const navigate = useNavigate();
@@ -87,27 +82,14 @@ export default function SearchResult() {
           sortType: "최신순",
         });
 
-        const list = data.content || [];
+        const list = data?.content || [];
 
-        const listWithLike = await Promise.all(
-          list.map(async (q) => {
-            try {
-              const likeInfo = await getLikeStatus(q.questionId);
-              return {
-                ...q,
-                likeCount: likeInfo.likeCount,
-                likedByMe: likeInfo.likedByMe,
-              };
-            } catch (e) {
-              console.error("좋아요 상태 조회 실패", e);
-              return {
-                ...q,
-                likeCount: 0,
-                likedByMe: false,
-              };
-            }
-          })
-        );
+        // 백에서 내려온 likeCount / isLikedByMe 그대로 사용
+        const listWithLike = list.map((q) => ({
+          ...q,
+          likeCount: q.likeCount ?? 0,
+          isLikedByMe: q.isLikedByMe ?? false,
+        }));
 
         setResults(listWithLike);
       } catch (e) {
@@ -128,11 +110,11 @@ export default function SearchResult() {
     setResults((prev) =>
       prev.map((q) => {
         if (q.questionId === questionId) {
-          currentLiked = q.likedByMe;
+          currentLiked = q.isLikedByMe;
           return {
             ...q,
-            likedByMe: !q.likedByMe,
-            likeCount: q.likeCount + (q.likedByMe ? -1 : 1),
+            isLikedByMe: !q.isLikedByMe,
+            likeCount: q.likeCount + (q.isLikedByMe ? -1 : 1),
           };
         }
         return q;
@@ -153,7 +135,7 @@ export default function SearchResult() {
           if (q.questionId === questionId) {
             return {
               ...q,
-              likedByMe: currentLiked,
+              isLikedByMe: currentLiked,
               likeCount: q.likeCount + (currentLiked ? 1 : -1),
             };
           }
@@ -232,32 +214,31 @@ export default function SearchResult() {
   };
 
   // 질문에 따라 바로 채팅으로 갈지, 디테일로 갈지 결정
-const goToChatOrDetail = (item) => {
-  const status = item.questionStatus;
-  const myStatus = item.myParticipationStatus || "NONE";
+  const goToChatOrDetail = (item) => {
+    const status = item.questionStatus;
+    const myStatus = item.myParticipationStatus || "NONE";
 
-  const isFinished =
-    status === "FINISHED" || status === "COMPLETED" || status === "DONE";
-  const canWatchChat = isFinished || myStatus === "JOINED";
+    const isFinished =
+      status === "FINISHED" || status === "COMPLETED" || status === "DONE";
+    const canWatchChat = isFinished || myStatus === "JOINED";
 
-  // 채팅방 id 없으면 일단 디테일로 이동해서 다시 가져오게
-  if (!canWatchChat || !item.roomId) {
-    navigate("/detail", {
-      state: { questionId: item.questionId, item },
+    // 채팅방 id 없으면 일단 디테일로 이동해서 다시 가져오게
+    if (!canWatchChat || !item.roomId) {
+      navigate("/detail", {
+        state: { questionId: item.questionId, item },
+      });
+      return;
+    }
+
+    navigate("/chat", {
+      state: {
+        questionId: item.questionId,
+        roomId: item.roomId,
+        questionTitle: item.questionTitle,
+        status: item.questionStatus,
+      },
     });
-    return;
-  }
-
-  navigate("/chat", {
-    state: {
-      questionId: item.questionId,
-      roomId: item.roomId,
-      questionTitle: item.questionTitle,
-      status: item.questionStatus,
-    },
-  });
-};
-
+  };
 
   return (
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
@@ -276,10 +257,9 @@ const goToChatOrDetail = (item) => {
                 active ? "text-black font-medium-bold" : "text-black"
               }`}
             >
-                <span className={`${active ? "font-bold" : ""}`}>
-                  {tab.name}
-                </span>
-
+              <span className={`${active ? "font-bold" : ""}`}>
+                {tab.name}
+              </span>
 
               {active && (
                 <span className="absolute mt-[2rem] ml-[0rem] left-0 w-full h-[2px] bg-[#FA502E] rounded-full" />
@@ -316,7 +296,9 @@ const goToChatOrDetail = (item) => {
 
                 {popup === "participate" && (
                   <p className="text-[0.75rem] text-[#3B3D40] leading-[1.3rem] mt-[0.25rem] whitespace-pre-line">
-                    {"대화 인원이 모두 모이면 알려드릴게요.\n알림을 받으면 30초 안에 ‘준비 완료’를 눌러 참여할 수 있습니다."}
+                    {
+                      "대화 인원이 모두 모이면 알려드릴게요.\n알림을 받으면 30초 안에 ‘준비 완료’를 눌러 참여할 수 있습니다."
+                    }
                   </p>
                 )}
 
@@ -385,7 +367,6 @@ const goToChatOrDetail = (item) => {
 
                   <div className="w-full h-[1px] bg-[#E7EBEF] mx-auto mt-[0.8rem] mb-[0.75rem]" />
 
-
                   <button
                     type="button"
                     onClick={(e) => handleProfileClick(e, item)}
@@ -442,70 +423,69 @@ const goToChatOrDetail = (item) => {
                   </div>
 
                   {/* 좋아요 + 참여/대화 버튼 */}
-                <div className="flex justify-between items-center mt-[0.8rem]">
-                  {/* 좋아요 */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleLike(item.questionId);
-                    }}
-                    className="flex items-center gap-[0.25rem]"
-                  >
-                    <img
-                      src={
-                        item.likedByMe
-                          ? "/icons/heart-filled.svg"
-                          : "/icons/heart.svg"
-                      }
-                      className="w-[1rem] h-[1rem]"
-                      alt=""
-                    />
-                    <span className="text-[0.875rem] text-[#6B7280]">
-                      {item.likeCount ?? 0}
-                    </span>
-                  </button>
+                  <div className="flex justify-between items-center mt-[0.8rem]">
+                    {/* 좋아요 */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleLike(item.questionId);
+                      }}
+                      className="flex items-center gap-[0.25rem]"
+                    >
+                      <img
+                        src={
+                          item.isLikedByMe
+                            ? "/icons/heart-filled.svg"
+                            : "/icons/heart.svg"
+                        }
+                        className="w-[1rem] h-[1rem]"
+                        alt=""
+                      />
+                      <span className="text-[0.875rem] text-[#6B7280]">
+                        {item.likeCount ?? 0}
+                      </span>
+                    </button>
 
-                  {/* 참여/취소/대화 버튼 */}
-                  {myStatus === "JOINED" ? (
-                    // 🔥 참여 중 → 항상 대화 보기(바로 채팅 or 디테일)
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        goToChatOrDetail(item);
-                      }}
-                      className="px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
-                    >
-                      대화 보기
-                    </button>
-                  ) : canParticipate ? (
-                    // 참여 가능 상태 → NONE: 참여하기 / WAITING: 참여 취소
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleParticipate(item.questionId, myStatus);
-                      }}
-                      className={`px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium ${
-                        myStatus === "WAITING"
-                          ? "bg-[#B5BBC1] text-white"
-                          : "bg-[#FA502E] text-white"
-                      }`}
-                    >
-                      {myStatus === "WAITING" ? "참여 취소" : "참여하기"}
-                    </button>
-                  ) : (
-                    // 모집 중이 아니면 → 종료된 경우에는 채팅, 진행중이면 디테일
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        goToChatOrDetail(item);
-                      }}
-                      className="px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
-                    >
-                      대화 보기
-                    </button>
-                  )}
-                </div>
-
+                    {/* 참여/취소/대화 버튼 */}
+                    {myStatus === "JOINED" ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToChatOrDetail(item);
+                        }}
+                        className="px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
+                      >
+                        대화 보기
+                      </button>
+                    ) : canParticipate ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleParticipate(
+                            item.questionId,
+                            myStatus
+                          );
+                        }}
+                        className={`px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium ${
+                          myStatus === "WAITING"
+                            ? "bg-[#B5BBC1] text-white"
+                            : "bg-[#FA502E] text-white"
+                        }`}
+                      >
+                        {myStatus === "WAITING" ? "참여 취소" : "참여하기"}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToChatOrDetail(item);
+                        }}
+                        className="px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
+                      >
+                        대화 보기
+                      </button>
+                    )}
+                  </div>
 
                   <div className="w-[30rem] h-[0.5rem] bg-[#F2F4F8] ml-[-2.5rem] mt-[1.5rem]" />
                 </div>

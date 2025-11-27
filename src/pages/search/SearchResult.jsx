@@ -45,6 +45,27 @@ function getStatusChipClass(label) {
   return "bg-[#E3F2FF] text-[#1D72FF]";
 }
 
+/* ================= 정렬 함수 ================= */
+
+function sortResults(list, sortType) {
+  if (!Array.isArray(list)) return [];
+
+  const copied = [...list];
+
+  if (sortType === "인기순") {
+    // 좋아요 많은 순
+    copied.sort((a, b) => (b?.likeCount || 0) - (a?.likeCount || 0));
+  } else if (sortType === "최신순") {
+    // createdAt 기준 내림차순
+    copied.sort(
+      (a, b) =>
+        new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0)
+    );
+  }
+
+  return copied;
+}
+
 export default function SearchResult() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -103,7 +124,8 @@ export default function SearchResult() {
         sortType,
       });
 
-      setResults(data.content || []);
+      const list = Array.isArray(data?.content) ? data.content : [];
+      setResults(sortResults(list, sortType));
     } catch (error) {
       console.error("Error fetching results:", error);
     }
@@ -119,7 +141,7 @@ export default function SearchResult() {
   const handleToggleLike = async (questionId) => {
     const base = results.find((r) => r.questionId === questionId) || {};
     const current = likeState[questionId] || {
-      liked: base.likedByMe ?? false,
+      liked: base.isLikedByMe ?? false, // 백에서 내려오는 필드 사용
       count: base.likeCount ?? 0,
     };
 
@@ -131,13 +153,28 @@ export default function SearchResult() {
         res = await unlikeQuestion(questionId);
       }
 
+      // 개별 좋아요 상태 캐시
       setLikeState((prev) => ({
         ...prev,
         [questionId]: {
-          liked: res.likedByMe,
+          liked: res.isLikedByMe,
           count: res.likeCount,
         },
       }));
+
+      // 결과 리스트 내 해당 아이템 업데이트 + 정렬 반영
+      setResults((prev) => {
+        const updated = prev.map((item) =>
+          item.questionId === questionId
+            ? {
+                ...item,
+                isLikedByMe: res.isLikedByMe,
+                likeCount: res.likeCount,
+              }
+            : item
+        );
+        return sortResults(updated, sortType);
+      });
     } catch (e) {
       console.error("좋아요 토글 실패:", e);
     }
@@ -363,7 +400,7 @@ export default function SearchResult() {
           ) : (
             results.map((item) => {
               const likeInfo = likeState[item.questionId] || {
-                liked: item.likedByMe ?? false,
+                liked: item.isLikedByMe ?? false,
                 count: item.likeCount ?? 0,
               };
 

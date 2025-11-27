@@ -8,7 +8,6 @@ import {
   cancelParticipateQuestion,
 } from "../../lib/questionService";
 import {
-  getLikeStatus,
   likeQuestion,
   unlikeQuestion,
 } from "../../lib/likeService";
@@ -20,7 +19,7 @@ export default function MainScreen() {
 
   const [popup, setPopup] = useState(null);
 
-  // 참여 상태 (질문별)
+  // 참여 상태 (질문별) – 지금은 안 써도 일단 유지
   const [participate, setParticipate] = useState({});
 
   // 홈에 띄울 목록
@@ -34,7 +33,7 @@ export default function MainScreen() {
   });
   const [scrapLoading, setScrapLoading] = useState(false);
 
-  // 🔶 탭 메뉴 데이터
+  // 탭 메뉴
   const tabs = [
     { name: "NOW", path: "/main" },
     { name: "최신 질문", path: "/main/new" },
@@ -51,34 +50,24 @@ export default function MainScreen() {
     return `${diffDays}일 전`;
   };
 
-function getStatusLabel(status, current, max) {
-  if (!status) return null;
+  function getStatusLabel(status, current, max) {
+    if (!status) return null;
 
-  // 상태 실제 값 찍어보기 (한 번만 써보고 나중에 지워도 됨)
-  // console.log("questionStatus:", status, "current/max:", current, max);
-
-  switch (status) {
-    case "RECRUITING":
-      // 모집 중인데 인원이 다 찼으면 진행중으로 처리
-      if (max && current >= max) return "진행중";
-      return "참여 가능";
-
-    case "ACTIVE":
-    case "READY_CHECK":
-      return "진행중";
-
-    case "COMPLETED":
-    case "DONE":
-    case "FINISHED":    // 🔥 DetailScreen 에서 쓰던 값
-      return "종료";
-
-    default:
-      // 최소한 뭐라도 보이게 하려면 임시로 이렇게:
-      // return status;
-      return null;
+    switch (status) {
+      case "RECRUITING":
+        if (max && current >= max) return "진행중";
+        return "참여 가능";
+      case "ACTIVE":
+      case "READY_CHECK":
+        return "진행중";
+      case "COMPLETED":
+      case "DONE":
+      case "FINISHED":
+        return "종료";
+      default:
+        return null;
+    }
   }
-}
-
 
   // 상태 뱃지 색
   const getStatusChipClass = (label) => {
@@ -88,11 +77,11 @@ function getStatusLabel(status, current, max) {
     if (label === "종료") {
       return "bg-[#F3F4F6] text-[#4B5563]";
     }
-    // 참여 가능
     return "bg-[#E3F2FF] text-[#1D72FF]";
   };
 
   useEffect(() => {
+    // 🔸 인기 질문 (좋아요 상위)
     const fetchPopular = async () => {
       setLoading((prev) => ({ ...prev, popular: true }));
       try {
@@ -105,30 +94,16 @@ function getStatusLabel(status, current, max) {
           sortType: "인기순",
         });
 
-        const list = data.content || [];
+        const list = data?.content || [];
 
-        // 좋아요 상태 붙이기
-        const listWithLike = await Promise.all(
-          list.map(async (q) => {
-            try {
-              const likeInfo = await getLikeStatus(q.questionId);
-              return {
-                ...q,
-                likeCount: likeInfo.likeCount,
-                likedByMe: likeInfo.likedByMe,
-              };
-            } catch (e) {
-              console.error("홈 인기질문 좋아요 상태 조회 실패", e);
-              return {
-                ...q,
-                likeCount: q.likeCount ?? 0,
-                likedByMe: q.likedByMe ?? false,
-              };
-            }
-          })
-        );
+        // 백에서 내려온 likeCount, isLikedByMe 사용
+        const withLike = list.map((q) => ({
+          ...q,
+          likeCount: q.likeCount ?? 0,
+          isLikedByMe: q.isLikedByMe ?? false,
+        }));
 
-        const sortedByLike = [...listWithLike].sort(
+        const sortedByLike = [...withLike].sort(
           (a, b) => (b.likeCount || 0) - (a.likeCount || 0)
         );
         const top3 = sortedByLike.slice(0, 3);
@@ -141,6 +116,7 @@ function getStatusLabel(status, current, max) {
       }
     };
 
+    // 🔸 최신 질문
     const fetchLatest = async () => {
       setLoading((prev) => ({ ...prev, latest: true }));
       try {
@@ -153,29 +129,15 @@ function getStatusLabel(status, current, max) {
           sortType: "최신순",
         });
 
-        const list = data.content || [];
+        const list = data?.content || [];
 
-        const listWithLike = await Promise.all(
-          list.map(async (q) => {
-            try {
-              const likeInfo = await getLikeStatus(q.questionId);
-              return {
-                ...q,
-                likeCount: likeInfo.likeCount,
-                likedByMe: likeInfo.likedByMe,
-              };
-            } catch (e) {
-              console.error("홈 최신질문 좋아요 상태 조회 실패", e);
-              return {
-                ...q,
-                likeCount: q.likeCount ?? 0,
-                likedByMe: q.likedByMe ?? false,
-              };
-            }
-          })
-        );
+        const withLike = list.map((q) => ({
+          ...q,
+          likeCount: q.likeCount ?? 0,
+          isLikedByMe: q.isLikedByMe ?? false,
+        }));
 
-        setLatestQuestions(listWithLike);
+        setLatestQuestions(withLike);
       } catch (e) {
         console.error("홈 최신질문 불러오기 실패", e);
       } finally {
@@ -183,10 +145,11 @@ function getStatusLabel(status, current, max) {
       }
     };
 
+    // 🔸 하이라이트
     const fetchHighlights = async () => {
       setScrapLoading(true);
       try {
-        const list = await getPopularScraps(5); // 필요하면 숫자 조정
+        const list = await getPopularScraps(5);
         setPopularScraps(Array.isArray(list) ? list : []);
       } catch (e) {
         console.error("하이라이트 인기 스크랩 불러오기 실패", e);
@@ -200,31 +163,32 @@ function getStatusLabel(status, current, max) {
     fetchHighlights();
   }, []);
 
+  // ❤️ 좋아요 토글 (홈 인기/최신 둘 다 반영)
   const toggleLike = async (questionId) => {
     let currentLiked = false;
 
-    // 화면 먼저 업데이트 (인기/최신 둘 다 반영)
     setPopularQuestions((prev) =>
       prev.map((q) => {
         if (q.questionId === questionId) {
-          currentLiked = q.likedByMe;
+          currentLiked = q.isLikedByMe;
           return {
             ...q,
-            likedByMe: !q.likedByMe,
-            likeCount: q.likeCount + (q.likedByMe ? -1 : 1),
+            isLikedByMe: !q.isLikedByMe,
+            likeCount: q.likeCount + (q.isLikedByMe ? -1 : 1),
           };
         }
         return q;
       })
     );
+
     setLatestQuestions((prev) =>
       prev.map((q) => {
         if (q.questionId === questionId) {
-          currentLiked = q.likedByMe;
+          currentLiked = q.isLikedByMe;
           return {
             ...q,
-            likedByMe: !q.likedByMe,
-            likeCount: q.likeCount + (q.likedByMe ? -1 : 1),
+            isLikedByMe: !q.isLikedByMe,
+            likeCount: q.likeCount + (q.isLikedByMe ? -1 : 1),
           };
         }
         return q;
@@ -245,7 +209,7 @@ function getStatusLabel(status, current, max) {
           if (q.questionId === questionId) {
             return {
               ...q,
-              likedByMe: currentLiked,
+              isLikedByMe: currentLiked,
               likeCount: q.likeCount + (currentLiked ? 1 : -1),
             };
           }
@@ -257,7 +221,7 @@ function getStatusLabel(status, current, max) {
           if (q.questionId === questionId) {
             return {
               ...q,
-              likedByMe: currentLiked,
+              isLikedByMe: currentLiked,
               likeCount: q.likeCount + (currentLiked ? 1 : -1),
             };
           }
@@ -271,10 +235,8 @@ function getStatusLabel(status, current, max) {
   const handleToggleParticipate = async (questionId, currentMyStatus) => {
     try {
       if (currentMyStatus === "NONE") {
-        // 참여 신청
         await participateQuestion(questionId);
 
-        // 인기 질문/최신 질문 둘 다에 반영
         setPopularQuestions((prev) =>
           prev.map((item) =>
             item.questionId === questionId
@@ -292,7 +254,6 @@ function getStatusLabel(status, current, max) {
 
         setPopup("participate");
       } else if (currentMyStatus === "WAITING") {
-        // 대기 중 취소
         await cancelParticipateQuestion(questionId);
 
         setPopularQuestions((prev) =>
@@ -312,7 +273,6 @@ function getStatusLabel(status, current, max) {
 
         setPopup("cancel");
       } else {
-        // JOINED는 여기서 아무것도 안 함 (대화 보기에서 처리)
         return;
       }
     } catch (e) {
@@ -323,16 +283,13 @@ function getStatusLabel(status, current, max) {
     }
   };
 
-
   const renderQuestionCard = (item) => {
     const statusLabel = getStatusLabel(
       item.questionStatus,
       item.currentParticipants,
       item.maxParticipants
     );
-
     const isJoinable = statusLabel === "참여 가능";
-
     const myStatus = item.myParticipationStatus || "NONE";
 
     return (
@@ -418,7 +375,9 @@ function getStatusLabel(status, current, max) {
           >
             <img
               src={
-                item.likedByMe ? "/icons/heart-filled.svg" : "/icons/heart.svg"
+                item.isLikedByMe
+                  ? "/icons/heart-filled.svg"
+                  : "/icons/heart.svg"
               }
               className="w-6 h-6"
             />
@@ -427,50 +386,46 @@ function getStatusLabel(status, current, max) {
             </span>
           </button>
 
-            {/* 상태에 따라 버튼 변경 */}
-            {myStatus === "JOINED" ? (
-              // 1) 이미 참여 중이면 → 항상 대화 보기
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate("/detail", {
-                    state: { questionId: item.questionId, item },
-                  });
-                }}
-                className="px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
-              >
-                대화 보기
-              </button>
-            ) : isJoinable ? (
-              // 2) 참여 가능 상태 → NONE: 참여하기 / WAITING: 참여 취소
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggleParticipate(item.questionId, myStatus);
-                }}
-                className={`px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium ${
-                  myStatus === "WAITING"
-                    ? "bg-[#B5BBC1] text-white" // 대기 중: 참여 취소(회색)
-                    : "bg-[#FA502E] text-white" // 신청 안 함: 참여하기(주황)
-                }`}
-              >
-                {myStatus === "WAITING" ? "참여 취소" : "참여하기"}
-              </button>
-            ) : (
-              // 3) 모집 중이 아니면 → 대화 보기
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate("/detail", {
-                    state: { questionId: item.questionId, item },
-                  });
-                }}
-                className="px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
-              >
-                대화 보기
-              </button>
-            )}
-
+          {/* 상태에 따라 버튼 변경 */}
+          {myStatus === "JOINED" ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/detail", {
+                  state: { questionId: item.questionId, item },
+                });
+              }}
+              className="px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
+            >
+              대화 보기
+            </button>
+          ) : isJoinable ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleParticipate(item.questionId, myStatus);
+              }}
+              className={`px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium ${
+                myStatus === "WAITING"
+                  ? "bg-[#B5BBC1] text-white"
+                  : "bg-[#FA502E] text-white"
+              }`}
+            >
+              {myStatus === "WAITING" ? "참여 취소" : "참여하기"}
+            </button>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/detail", {
+                  state: { questionId: item.questionId, item },
+                });
+              }}
+              className="px-4 py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
+            >
+              대화 보기
+            </button>
+          )}
         </div>
       </div>
     );
@@ -489,11 +444,10 @@ function getStatusLabel(status, current, max) {
     const timeLabel = formatTimeAgo(createdAt);
 
     return (
-        <div
+      <div
         key={item.messageId ?? index}
         className="w-[20.4375rem] bg-white rounded-[1rem] shadow-[0px_2px_19px_rgba(0,0,0,0.10)] p-5 border border-gray-100 my-[1rem]"
       >
-        
         <div className="relative w-full flex items-start">
           <div className="mt-[0.5rem] ml-[0.25rem] leading-[1.5]">
             <div className="flex items-center mb-[0.25rem]">
@@ -516,53 +470,24 @@ function getStatusLabel(status, current, max) {
             <p className="text-[0.875rem] font-bold mt-[0.25rem] text-[#3B3D40] line-clamp-2">
               {questionTitle}
             </p>
-            </div>
-            </div>
-            <div>
-            <div className="w-full h-[0.0625rem] bg-[#E7EBEF] mt-[0.75rem] pr-[2rem]" />
-
-            <p className="text-[0.875rem] text-[#3B3D40] mt-[1rem] px-[0.5rem] line-clamp-2">
-              {messageContent}
-            </p>
           </div>
         </div>
+        <div>
+          <div className="w-full h-[0.0625rem] bg-[#E7EBEF] mt-[0.75rem] pr-[2rem]" />
+          <p className="text-[0.875rem] text-[#3B3D40] mt-[1rem] px-[0.5rem] line-clamp-2">
+            {messageContent}
+          </p>
+        </div>
+      </div>
     );
   };
-
-  // 질문에 따라 바로 채팅으로 갈지, 디테일로 갈지 결정
-  const goToChatOrDetail = (item) => {
-    const status = item.questionStatus;
-    const myStatus = item.myParticipationStatus || "NONE";
-
-    const isFinished =
-      status === "FINISHED" || status === "COMPLETED" || status === "DONE";
-    const canWatchChat = isFinished || myStatus === "JOINED";
-
-    // 채팅방 id 없으면 일단 디테일로 이동해서 다시 가져오게
-    if (!canWatchChat || !item.roomId) {
-      navigate("/detail", {
-        state: { questionId: item.questionId, item },
-      });
-      return;
-    }
-
-    navigate("/chat", {
-      state: {
-        questionId: item.questionId,
-        roomId: item.roomId,
-        questionTitle: item.questionTitle,
-        status: item.questionStatus,
-      },
-    });
-  };
-
 
   return (
     <div className="flex flex-col w-full h-full bg-[#FAFAFA] font-[Pretendard]">
       <div className="flex-shrink-0">
         <Navbar />
 
-        {/* 🔶 탭 메뉴 */}
+        {/* 탭 메뉴 */}
         <div className="flex justify-start w-full px-[1.5rem] bg-white gap-x-[2.25rem]">
           {tabs.map((tab) => {
             const active = location.pathname === tab.path;
@@ -647,7 +572,7 @@ function getStatusLabel(status, current, max) {
             </div>
           </div>
 
-          {/* 🔸 섹션 1 : 인기 질문 상위 3개 */}
+          {/* 섹션 1 : 인기 질문 상위 3개 */}
           <div className="w-full px-6 mt-10 flex justify-between items-center z-0 relative">
             <p className="text-[1.25rem] font-bold">
               가장 많은 시선을 끈 질문들
@@ -672,7 +597,7 @@ function getStatusLabel(status, current, max) {
             </div>
           </div>
 
-          {/* 🔸 섹션 2 : 대화 사이에 머문 하이라이트 */}
+          {/* 섹션 2 : 대화 사이에 머문 하이라이트 */}
           <div className="w-full px-6 mt-[2rem]">
             <div className="flex items-center justify-between">
               <p className="text-[1.5rem] font-bold">
@@ -708,7 +633,7 @@ function getStatusLabel(status, current, max) {
             </div>
           </div>
 
-          {/* 🔸 섹션 3 : 최신 질문 상위 3개 */}
+          {/* 섹션 3 : 최신 질문 상위 3개 */}
           <div className="w-full px-6 mt-10 flex justify-between items-center z-0 relative">
             <p className="text-[1.25rem] font-bold">지금 새로 올라온 질문들</p>
             <button onClick={() => navigate("/main/new")}>

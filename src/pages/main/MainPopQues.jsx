@@ -7,11 +7,7 @@ import {
   participateQuestion,
   cancelParticipateQuestion,
 } from "../../lib/questionService";
-import {
-  getLikeStatus,
-  likeQuestion,
-  unlikeQuestion,
-} from "../../lib/likeService";
+import { likeQuestion, unlikeQuestion } from "../../lib/likeService";
 
 // 백엔드 상태값 → 화면에 보여줄 한글 라벨로 변환
 function getStatusLabel(status, current, max) {
@@ -19,7 +15,6 @@ function getStatusLabel(status, current, max) {
 
   switch (status) {
     case "RECRUITING":
-      // 모집 중인데 인원이 다 찼으면 진행중으로 보여주고 싶으면 이 if 유지
       if (max && current >= max) return "진행중";
       return "참여 가능";
     case "ACTIVE":
@@ -36,15 +31,12 @@ function getStatusLabel(status, current, max) {
 // 상태칩 스타일
 function getStatusChipClass(label) {
   if (label === "진행중") {
-    // 연두 배경 + 초록 글자
     return "bg-[#F3FFE1] text-[#6BB600]";
   }
   if (label === "종료") {
-    // 연회색 배경 + 진회색 글자
     return "bg-[#F3F4F6] text-[#4B5563]";
   }
-  // 참여 가능
-  return "bg-[#E3F2FF] text-[#1D72FF]"; // 연파랑 배경 + 파랑 글자
+  return "bg-[#E3F2FF] text-[#1D72FF]";
 }
 
 /* ================= 메인 컴포넌트 ================= */
@@ -83,32 +75,18 @@ export default function SearchResult() {
           sortType: "인기순",
         });
 
-        const list = data.content || [];
+        const list = (data && data.content) || [];
 
-        const listWithLike = await Promise.all(
-          list.map(async (q) => {
-            try {
-              const likeInfo = await getLikeStatus(q.questionId);
-              return {
-                ...q,
-                likeCount: likeInfo.likeCount,
-                likedByMe: likeInfo.likedByMe,
-              };
-            } catch (e) {
-              console.error("좋아요 상태 조회 실패", e);
-              return {
-                ...q,
-                likeCount: 0,
-                likedByMe: false,
-              };
-            }
-          })
-        );
+        // 백에서 내려온 값 정리 + 안전한 기본값
+        const withLike = list.map((q) => ({
+          ...q,
+          likeCount: q.likeCount ?? 0,
+          isLikedByMe: q.isLikedByMe ?? false,
+        }));
 
-        // 인기순 정렬
-        listWithLike.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
-
-        setResults(listWithLike);
+        // 좋아요 기준 내림차순 정렬
+        withLike.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
+        setResults(withLike);
       } catch (e) {
         console.error("인기 질문 불러오기 실패", e);
       } finally {
@@ -119,19 +97,19 @@ export default function SearchResult() {
     fetchPopularQuestions();
   }, []);
 
-  // ❤️ 좋아요 토글 + 정렬
+  // ❤️ 좋아요 토글 + 정렬 (낙관적 업데이트)
   const toggleLike = async (questionId) => {
     let currentLiked = false;
 
-    // 1) 화면 먼저 업데이트 + 정렬
+    // 화면 먼저 업데이트
     setResults((prev) => {
       const updated = prev.map((q) => {
         if (q.questionId === questionId) {
-          currentLiked = q.likedByMe;
+          currentLiked = q.isLikedByMe;
           return {
             ...q,
-            likedByMe: !q.likedByMe,
-            likeCount: q.likeCount + (q.likedByMe ? -1 : 1),
+            isLikedByMe: !q.isLikedByMe,
+            likeCount: q.likeCount + (q.isLikedByMe ? -1 : 1),
           };
         }
         return q;
@@ -150,13 +128,13 @@ export default function SearchResult() {
     } catch (e) {
       console.error("좋아요 토글 실패", e);
 
-      // 2) 실패 시 롤백 + 다시 정렬
+      // 실패하면 롤백
       setResults((prev) => {
         const updated = prev.map((q) => {
           if (q.questionId === questionId) {
             return {
               ...q,
-              likedByMe: currentLiked,
+              isLikedByMe: currentLiked,
               likeCount: q.likeCount + (currentLiked ? 1 : -1),
             };
           }
@@ -169,11 +147,10 @@ export default function SearchResult() {
     }
   };
 
-  // 참여 / 취소 (NONE ↔ WAITING) - myParticipationStatus 기준
+  // 참여 / 취소 (NONE ↔ WAITING)
   const handleToggleParticipate = async (questionId, currentMyStatus) => {
     try {
       if (currentMyStatus === "NONE") {
-        // 참여 신청
         await participateQuestion(questionId);
 
         setResults((prev) =>
@@ -186,7 +163,6 @@ export default function SearchResult() {
 
         setPopup("participate");
       } else if (currentMyStatus === "WAITING") {
-        // 대기 중 취소
         await cancelParticipateQuestion(questionId);
 
         setResults((prev) =>
@@ -199,7 +175,6 @@ export default function SearchResult() {
 
         setPopup("cancel");
       } else {
-        // JOINED면 여기서 아무 것도 안 함 (대화 보기에서 처리)
         return;
       }
     } catch (e) {
@@ -237,32 +212,30 @@ export default function SearchResult() {
   };
 
   // 질문에 따라 바로 채팅으로 갈지, 디테일로 갈지 결정
-const goToChatOrDetail = (item) => {
-  const status = item.questionStatus;
-  const myStatus = item.myParticipationStatus || "NONE";
+  const goToChatOrDetail = (item) => {
+    const status = item.questionStatus;
+    const myStatus = item.myParticipationStatus || "NONE";
 
-  const isFinished =
-    status === "FINISHED" || status === "COMPLETED" || status === "DONE";
-  const canWatchChat = isFinished || myStatus === "JOINED";
+    const isFinished =
+      status === "FINISHED" || status === "COMPLETED" || status === "DONE";
+    const canWatchChat = isFinished || myStatus === "JOINED";
 
-  // 채팅방 id 없으면 일단 디테일로 이동해서 다시 가져오게
-  if (!canWatchChat || !item.roomId) {
-    navigate("/detail", {
-      state: { questionId: item.questionId, item },
+    if (!canWatchChat || !item.roomId) {
+      navigate("/detail", {
+        state: { questionId: item.questionId, item },
+      });
+      return;
+    }
+
+    navigate("/chat", {
+      state: {
+        questionId: item.questionId,
+        roomId: item.roomId,
+        questionTitle: item.questionTitle,
+        status: item.questionStatus,
+      },
     });
-    return;
-  }
-
-  navigate("/chat", {
-    state: {
-      questionId: item.questionId,
-      roomId: item.roomId,
-      questionTitle: item.questionTitle,
-      status: item.questionStatus,
-    },
-  });
-};
-
+  };
 
   return (
     <div className="flex flex-col h-screen bg-white font-[Pretendard]">
@@ -281,10 +254,7 @@ const goToChatOrDetail = (item) => {
                 active ? "text-black font-medium-bold" : "text-black"
               }`}
             >
-                <span className={`${active ? "font-bold" : ""}`}>
-                  {tab.name}
-                </span>
-
+              <span className={active ? "font-bold" : ""}>{tab.name}</span>
 
               {active && (
                 <span className="absolute mt-[2rem] ml-[0rem] left-0 w-full h-[2px] bg-[#FA502E] rounded-full" />
@@ -296,12 +266,7 @@ const goToChatOrDetail = (item) => {
 
       {/* 참여/취소 팝업 */}
       {popup && (
-        <div
-          className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 
-                      w-[100%] max-w-[500px]
-                      p-4 z-[200]
-                      animate-slide-down"
-        >
+        <div className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 w-[100%] max-w-[500px] p-4 z-[200] animate-slide-down">
           <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#F2F2F2]">
             <div className="flex items-start gap-3">
               <img
@@ -321,7 +286,9 @@ const goToChatOrDetail = (item) => {
 
                 {popup === "participate" && (
                   <p className="text-[0.75rem] text-[#3B3D40] leading-[1.3rem] mt-[0.25rem] whitespace-pre-line">
-                    {"대화 인원이 모두 모이면 알려드릴게요.\n알림을 받으면 30초 안에 ‘준비 완료’를 눌러 참여할 수 있습니다."}
+                    {
+                      "대화 인원이 모두 모이면 알려드릴게요.\n알림을 받으면 30초 안에 ‘준비 완료’를 눌러 참여할 수 있습니다."
+                    }
                   </p>
                 )}
 
@@ -390,7 +357,6 @@ const goToChatOrDetail = (item) => {
 
                   <div className="w-full h-[1px] bg-[#E7EBEF] mx-auto mt-[0.8rem] mb-[0.75rem]" />
 
-
                   <button
                     type="button"
                     onClick={(e) => handleProfileClick(e, item)}
@@ -458,7 +424,7 @@ const goToChatOrDetail = (item) => {
                     >
                       <img
                         src={
-                          item.likedByMe
+                          item.isLikedByMe
                             ? "/icons/heart-filled.svg"
                             : "/icons/heart.svg"
                         }
@@ -472,20 +438,16 @@ const goToChatOrDetail = (item) => {
 
                     {/* 참여 / 취소 / 대화 보기 */}
                     {myStatus === "JOINED" ? (
-                      // 이미 참여 중 → 대화 보기
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate("/detail", {
-                            state: { questionId: item.questionId, item },
-                          });
+                          goToChatOrDetail(item);
                         }}
                         className="px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
                       >
                         대화 보기
                       </button>
                     ) : showJoinButton ? (
-                      // 참여 가능 상태 → NONE: 참여하기 / WAITING: 참여 취소
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -500,13 +462,10 @@ const goToChatOrDetail = (item) => {
                         {myStatus === "WAITING" ? "참여 취소" : "참여하기"}
                       </button>
                     ) : (
-                      // 모집 중이 아니면 → 대화 보기
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate("/detail", {
-                            state: { questionId: item.questionId, item },
-                          });
+                          goToChatOrDetail(item);
                         }}
                         className="px-[1rem] py-[0.4rem] rounded-md text-[0.875rem] font-medium bg-[#54575C] text-white"
                       >

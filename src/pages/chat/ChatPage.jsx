@@ -429,7 +429,7 @@ export default function ChatPage() {
 
     <div className="flex flex-col h-screen w-full bg-white">
       
-      <header className="bg-white">
+      <div className="bg-white">
         <ChatTopBar 
           startAt={startAt} 
           endAt={endAt} 
@@ -439,8 +439,9 @@ export default function ChatPage() {
           roomId={roomId}
           questionId={questionId}
           status={status}
+          className="fixed top-0 z-10 w-full"
         />
-      </header>
+      </div>
 
 
     <main className="flex-1 min-h-0 w-full flex flex-col mt-[1rem]">
@@ -541,7 +542,9 @@ export default function ChatPage() {
 
       <div className="bg-white justify-center items-center">
         <div className="flex flex-col w-full h-[5rem] bg-white select-none sticky-0">
-          <ChatInput onSend={handleSend} status={status} />
+          <ChatInput onSend={handleSend} status={status} 
+                      className="fixed bottom-0 w-full z-10"
+          />
         </div>
       </div>
     </div>
